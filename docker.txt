@@ -1,0 +1,20 @@
+PARA SUBIR NO DOCKER
+docker-compose up -d
+
+VARIFICAR SE TA RODANDO NO DOCKER
+docker-compose ps
+
+
+ENTRAR NO CONTAINER
+docker-compose exec web sh
+
+CRIAR O DB
+npx prisma migrate dev --name init
+
+RESETA SE DER ERRO
+npx prisma migrate reset
+
+VER O DB
+npx prisma studio
+
+lembra de ver se o host do prisma studio está nas ports do docker-compose.yml

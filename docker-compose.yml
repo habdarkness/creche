@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: hugo
+      POSTGRES_PASSWORD: senha123
+      POSTGRES_DB: creche
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    restart: always
+    ports:
+      - "3000:3000"
+      - "5555:5555"
+    environment:
+      DATABASE_URL: "postgresql://hugo:senha123@db:5432/creche?schema=public"
+    depends_on:
+      - db
+
+
+volumes:
+  db_data:
