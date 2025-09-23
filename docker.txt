@@ -1,6 +1,9 @@
 PARA SUBIR NO DOCKER
 docker-compose up -d
 
+PARA SUBIR NO DOCKER E ATUALIZAR A BUILD
+docker-compose up -d --build
+
 VARIFICAR SE TA RODANDO NO DOCKER
 docker-compose ps
 
