@@ -3,9 +3,9 @@ services:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_USER: hugo
-      POSTGRES_PASSWORD: senha123
-      POSTGRES_DB: creche
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATAVASE_PASS}
+      POSTGRES_DB: ${DATABASE_NAME}
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
@@ -19,7 +19,7 @@ services:
       - "5555:5555"
     environment:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      DATABASE_URL: ${DATABASE_URL_DOCKER}
+      DATABASE_URL: ${DATABASE_URL}
     depends_on:
       - db
 

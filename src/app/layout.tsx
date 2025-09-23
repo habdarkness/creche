@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "IMESC Visto",
-	description: "IMESC Visto",
+	title: "Creche Estrela",
+	description: "Creche Estrela",
 };
 
 export default function RootLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {

@@ -1,5 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
-const bcrypt = require("bcrypt");
+import bcrypt from "bcrypt";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -16,6 +16,9 @@ async function createUser() {
 }
 
 createUser().then(() => {
-    console.log("Admin criado!");
-    prisma.$disconnect();
+    console.log("Usuário admin criado com sucesso!");
+    process.exit(0);
+}).catch((err) => {
+    console.error("Erro ao criar usuário:", err);
+    process.exit(1);
 });
