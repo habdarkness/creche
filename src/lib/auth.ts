@@ -24,7 +24,7 @@ export const authOptions: NextAuthOptions = {
                 if (!user) return null;
                 const isValid = await bcrypt.compare(credentials.password, user.password);
                 if (!isValid) return null;
-                const isTemporary = await bcrypt.compare(user.token_password, user.password);
+                const isTemporary = user.password == user.token_password;
                 console.log("------------------------")
                 console.log(isTemporary)
                 console.log(user.token_password)
@@ -34,6 +34,7 @@ export const authOptions: NextAuthOptions = {
                     name: user.name,
                     email: user.email,
                     level: user.level,
+                    type: user.type,
                     temporary: isTemporary,
                 };
             },
@@ -46,13 +47,21 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
+                token.name = user.name;
+                token.email = user.email;
                 token.level = user.level;
+                token.type = user.type;
+                token.temporary = user.temporary;
             }
             return token;
         },
         async session({ session, token }) {
             session.user.id = token.id;
+            session.user.name = token.name;
+            session.user.email = token.email;
             session.user.level = token.level;
+            session.user.type = token.type;
+            session.user.temporary = token.temporary;
             return session;
         },
     },

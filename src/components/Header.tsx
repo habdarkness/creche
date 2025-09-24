@@ -5,10 +5,11 @@ import { faClipboardUser, faMoon, faSun, faRightFromBracket } from "@fortawesome
 import { useSession, signOut } from "next-auth/react";
 import { capitalize } from "@/lib/capitalize";
 import { useSearch, useTab } from "@/components/Contexts";
-import { redirect, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import SearchBar from "./SearchBar";
 
 export default function Header() {
+    const pathname = usePathname();
     const { data: session, status } = useSession();
     const [userName, setUserName] = useState("");
     const { search, setSearch } = useSearch();
@@ -25,23 +26,23 @@ export default function Header() {
         setTheme(light);
         setDark(!light);
         //aba
-        const lastPath = location.pathname.split("/")[-1];
-        if (lastPath == "usuarios") { setTab("usuarios") }
-        else if (lastPath == "estudantes") { setTab("estudantes") }
+        const lastPath = pathname.split("/").pop();
+        if (lastPath?.includes("usuarios")) { setTab("usuarios") }
+        else if (lastPath?.includes("estudantes")) { setTab("estudantes") }
         //verificar o tamanho da tela
         const updateScreenSize = () => { setIsMobile(window.innerWidth < 768); };
         updateScreenSize();
         window.addEventListener("resize", updateScreenSize);
         return () => window.removeEventListener("resize", updateScreenSize);
-    }, []);
+    }, [pathname]);
 
     useEffect(() => {
         if (session) { setUserName(capitalize(session.user.name, true)); }
-        if (status == "authenticated" && location.pathname != "/") {
-            if (session.user.temporary) {redirect("/")}
+        if (status == "authenticated" && pathname != "/") {
+            if (session.user.temporary) { router.push("/") }
         }
-        else if (status == "unauthenticated" && location.pathname != "/") { router.push("/") }
-    }, [session, status]);
+        else if (status == "unauthenticated" && pathname != "/") { router.push("/") }
+    }, [session, status, pathname]);
 
     function setTheme(light: boolean) {
         if (light) {
@@ -69,7 +70,7 @@ export default function Header() {
             <div className="flex flex-row items-center gap-4 w-full">
                 <div className="flex gap-4 w-full items-center">
                     <h1>Creche Estrela</h1>
-                    {session && (
+                    {session && !session.user.temporary && (
                         <>
                             <div className="flex bg-background-darker rounded-full p-1">
                                 <button
@@ -92,7 +93,7 @@ export default function Header() {
                     )}
                 </div>
                 {/* User */}
-                {session && (
+                {session && !session.user.temporary && (
                     <div
                         className="relative flex items-center gap-2"
                         onMouseEnter={() => setHovered(true)}

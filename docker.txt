@@ -20,4 +20,7 @@ docker-compose exec web npx prisma migrate reset
 VER O DB
 docker-compose exec web npx prisma studio
 
+ADICIONA UM ADMIN
+docker-compose exec web npx tsx src/scripts/createUser.ts
+
 lembra de ver se o host do prisma studio está nas ports do docker-compose.yml

@@ -11,7 +11,8 @@ async function createUser() {
             email: "hugo@email.com",
             password: passwordHash,
             token_password: passwordHash,
-            type: "admin",
+            type: "Administrador",
+            guardian: false,
             level: 1
         }
     });

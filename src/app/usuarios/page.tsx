@@ -6,8 +6,8 @@ import Loader from "@/components/Loader";
 import PageButton from "@/components/PageButton";
 import TabForm from "@/components/TabForm";
 import { capitalize } from "@/lib/capitalize";
-import { UserForm } from "@/types/UserForm";
-import { faArrowUp19, faEnvelope, faKey, faUser } from "@fortawesome/free-solid-svg-icons";
+import { UserForm, userTypes } from "@/models/UserForm";
+import { faArrowUp19, faBriefcase, faEnvelope, faKey, faUser, faUserTie } from "@fortawesome/free-solid-svg-icons";
 import { User } from "@prisma/client";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -16,10 +16,10 @@ export default function Users() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [formVisible, setFormVisible] = useState(false);
-    const [form, setForm] = useState<UserForm>(new UserForm({token_password: generateToken()}));
+    const [form, setForm] = useState<UserForm>(new UserForm({ token_password: generateToken() }));
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        async function fetchUsers() {
             try {
                 setLoading(true);
                 const res = await fetch("/api/user");
@@ -74,7 +74,7 @@ export default function Users() {
                 text: form.send_token ? `A senha de acesso é: ${form.token_password}` : "",
                 icon: "success"
             });
-            setForm(new UserForm({token_password: generateToken()}));
+            setForm(new UserForm({ token_password: generateToken() }));
             setFormVisible(false);
         }
         catch (error) {
@@ -93,22 +93,34 @@ export default function Users() {
             <ul className=" grid grid-cols-4 w-full gap-4">
                 {users.map(user => (
                     <li key={user.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
-                        setForm(new UserForm({...user, send_token: false}));
+                        setForm(new UserForm({ ...user, send_token: false }));
                         setFormVisible(true);
                     }}>
                         <p className="font-bold text-lg">{capitalize(user.name)}</p>
-                        <p className="text-sm">{capitalize(user.email)}</p>
+                        <p className="text-sm">{capitalize(user.type)}</p>
+                        <p className="text-sm">{user.email}</p>
                     </li>
                 ))}
             </ul>
             <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit}>
                 <FormInput id="name" label="Nome" icon={faUser} value={form.name} onChange={handleChange} />
                 <FormInput id="email" label="Email" icon={faEnvelope} value={form.email} onChange={handleChange} />
-                <FormInput id="level" type="number" label="Nível de acesso" icon={faArrowUp19} value={form.level} onChange={handleChange} />
+                <div className="flex">
+                    <FormInput
+                        id="type"
+                        options={Object.keys(userTypes)}
+                        label="Nível de acesso"
+                        icon={faBriefcase}
+                        value={form.type}
+                        onChange={handleChange}
+                        fullWidth
+                    />
+                    <FormInput id="guardian" type="bool" label="Responsavel" value={form.guardian} onChange={handleChange} />
+                </div>
                 <div className="flex gap-2 items-center absolute right-[50%] bottom-5 translate-x-1/2">
                     <FormButton submit text={form.id == -1 ? "Cadastrar" : "Atualizar"} />
                     {form.id != -1 && (
-                        <FormButton text="Resetar a senha" color="bg-red-400" icon={faKey} onClick={() => setForm(prev => new UserForm({ ...prev, token_password: generateToken(), send_token: true }))} />
+                        <FormButton text={form.send_token ? `Senha: ${form.token_password}` : "Resetar senha"} color="bg-red-400" icon={faKey} onClick={() => setForm(prev => new UserForm({ ...prev, token_password: generateToken(), send_token: true }))} />
                     )}
                 </div>
             </TabForm>

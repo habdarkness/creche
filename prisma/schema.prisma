@@ -13,17 +13,20 @@ model User {
   email           String    @unique
   password        String
   token_password  String
-  type            String    @default("user")
-  level           Int
+  type            String    @default("Usuário")
+  level           Int       @default(3)
+  guardian        Boolean   @default(true) 
   students        Student[]
   createdAt       DateTime  @default(now())
 }
 
 model Student {
-  id        Int       @id @default(autoincrement()) 
-  name      String
-  parent_id Int
-  parent    User      @relation(fields: [parent_id], references: [id])
-  createdAt DateTime  @default(now())
+  id              Int       @id @default(autoincrement())
+  name            String
+  birthday        DateTime
+  gender          String    @default("M")
+  guardian_id     Int
+  guardian        User      @relation(fields: [guardian_id], references: [id])
+  createdAt       DateTime  @default(now())
 }
 

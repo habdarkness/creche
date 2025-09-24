@@ -12,7 +12,7 @@ const inputStyle = "p-2 rounded text-base font-normal bg-background-darker";
 export default function Home() {
     const { data: session, status } = useSession();
     const { setTab } = useTab();
-    const [form, setForm] = useState({ email: "", pass: "", confirm_pass: "" });
+    const [form, setForm] = useState({ email: "", pass: "", new_pass: "", confirm_pass: "" });
     const [error, setError] = useState("");
 
     useEffect(() => {
@@ -32,19 +32,25 @@ export default function Home() {
         setError("");
 
         if (session?.user.temporary) {
-            if (form.pass != form.confirm_pass) {return setError("Senhas diferents")}
-            if (form.pass.length < 6) {return setError("Senha inválida")}
+            if (form.new_pass != form.confirm_pass) { return setError("Senhas diferents") }
+            if (form.new_pass.length < 6) { return setError("Senha inválida") }
             try {
                 const res = await fetch("/api/user", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({id: session.user.id, password: form.pass})
+                    body: JSON.stringify({ id: session.user.id, password: form.new_pass })
                 })
                 const data = await res.json();
                 if (!res.ok) throw data.error;
-                signOut();
+                const resLogin = await signIn("credentials", {
+                    redirect: false,
+                    email: form.email,
+                    password: form.new_pass
+                });
+                if (!resLogin?.ok) { signOut(); }
+
             }
-            catch(error) {
+            catch (error) {
                 return Swal.fire({
                     title: "Erro ao criar senha",
                     text: String(error),
@@ -58,8 +64,6 @@ export default function Home() {
                 email: form.email,
                 password: form.pass
             });
-            if (res?.error) { setError("Usuário ou senha inválidos"); }
-            else { console.log("Login feito com sucesso!", res); }
         }
     }
 
@@ -88,7 +92,7 @@ export default function Home() {
                             className={inputStyle}
                             onChange={handleChange}
                         />
-                        {error && <p className="text-red-400">{error}</p>}
+                        {error && <p className="text-red-400 text-sm">{error}</p>}
                         <button
                             type="submit"
                             className="bg-primary text-lg px-2 py-1 rounded-full hover:scale-105 transition"
@@ -99,13 +103,13 @@ export default function Home() {
                 ) : session?.user.temporary && (
                     <>
                         <input
-                            id="pass"
+                            id="new_pass"
                             type="password"
                             placeholder="Senha"
                             className={inputStyle}
                             onChange={handleChange}
                         />
-                        {error && <p className="text-red-400">{error}</p>}
+                        {error && <p className="text-red-400 text-sm">{error}</p>}
                         <input
                             id="confirm_pass"
                             type="password"
@@ -121,7 +125,7 @@ export default function Home() {
                         </button>
                     </>
                 )
-            }
+                }
             </form>
         </div>
     );
