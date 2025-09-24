@@ -25,7 +25,10 @@ export const authOptions: NextAuthOptions = {
                 const isValid = await bcrypt.compare(credentials.password, user.password);
                 if (!isValid) return null;
                 const isTemporary = await bcrypt.compare(user.token_password, user.password);
-                
+                console.log("------------------------")
+                console.log(isTemporary)
+                console.log(user.token_password)
+                console.log(user.password)
                 return {
                     id: user.id.toString(),
                     name: user.name,
