@@ -1,10 +1,49 @@
 import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
+import { VerifyUser } from "@/lib/auth";
 
-export async function GET() {
-    return NextResponse.json({ message: "Lista de usuários" });
+const prisma = new PrismaClient();
+
+export async function GET(request: Request) {
+    const session = await VerifyUser();
+    if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    let users;
+    if (id) { users = await prisma.user.findUnique({ where: { id: Number(id) } }); }
+    else { users = await prisma.user.findMany({ where: { level: { gte: session.level } } }); }
+
+    return NextResponse.json(users);
 }
 
 export async function POST(request: Request) {
+    const session = await VerifyUser();
+    if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
+
     const data = await request.json();
-    return NextResponse.json({ message: "Usuário criado", data });
+    const { id, name, email, password, level } = data;
+    console.log(level && level >= session.level)
+    if (level && level <= session.level && session.id != id) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
+    try {
+        let user;
+        if (id) {
+            const id_int = parseInt(id);
+            if (isNaN(id_int)) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
+            const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
+            user = await prisma.user.update({
+                where: { id: id_int },
+                data: { name, email, ...(hashedPassword ? { password: hashedPassword } : {}), level }
+            });
+        }
+        else {
+            if (!name || !email || !level || !password) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user = await prisma.user.create({ data: { name, email, level, password: hashedPassword } });
+        };
+        return NextResponse.json({ message: id ? "Usuário atualizado" : "Usuário criado", user, });
+    }
+    catch (error) { return NextResponse.json({ error: "Erro ao salvar usuário" }, { status: 500 }); }
 }

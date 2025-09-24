@@ -12,10 +12,10 @@ ENTRAR NO CONTAINER
 docker-compose exec web sh
 
 CRIAR O DB
-npx prisma migrate dev --name init
+docker-compose exec web npx prisma migrate dev --name init
 
 RESETA SE DER ERRO
-npx prisma migrate reset
+docker-compose exec web npx prisma migrate reset
 
 VER O DB
 npx prisma studio

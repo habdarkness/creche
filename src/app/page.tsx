@@ -1,13 +1,25 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import React, { useState } from "react";
+import { useTab } from "@/components/Contexts";
+import Loader from "@/components/Loader";
+import { signIn, useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 const inputStyle = "p-2 rounded text-base font-normal bg-background-darker";
 
 export default function Home() {
+    const { data: session, status } = useSession();
+    const { setTab } = useTab();
     const [form, setForm] = useState({ email: "", pass: "" });
     const [error, setError] = useState("");
+
+    useEffect(() => {
+        if (status == "authenticated") {
+            setTab("usuarios")
+            redirect("usuarios")
+        }
+    }, [session, status])
 
     function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
         const { id, value } = event.target;
@@ -24,11 +36,8 @@ export default function Home() {
             password: "senha123"
         });
 
-        if (res?.error) {
-            setError("Usuário ou senha inválidos");
-        } else {
-            console.log("Login feito com sucesso!", res);
-        }
+        if (res?.error) { setError("Usuário ou senha inválidos"); }
+        else { console.log("Login feito com sucesso!", res); }
     }
 
     return (
@@ -38,31 +47,33 @@ export default function Home() {
                 onSubmit={handleSubmit}
             >
                 <h1>Login</h1>
-
-                <input
-                    id="email"
-                    type="text"
-                    placeholder="Email"
-                    className={inputStyle}
-                    onChange={handleChange}
-                />
-
-                <input
-                    id="pass"
-                    type="password"
-                    placeholder="Senha"
-                    className={inputStyle}
-                    onChange={handleChange}
-                />
-
-                {error && <p className="text-red-400">{error}</p>}
-
-                <button
-                    type="submit"
-                    className="bg-primary text-lg px-2 py-1 rounded-full hover:scale-105 transition"
-                >
-                    Entrar
-                </button>
+                {status == "unauthenticated" ? (
+                    <>
+                        <input
+                            id="email"
+                            type="text"
+                            placeholder="Email"
+                            className={inputStyle}
+                            onChange={handleChange}
+                        />
+                        <input
+                            id="pass"
+                            type="password"
+                            placeholder="Senha"
+                            className={inputStyle}
+                            onChange={handleChange}
+                        />
+                        {error && <p className="text-red-400">{error}</p>}
+                        <button
+                            type="submit"
+                            className="bg-primary text-lg px-2 py-1 rounded-full hover:scale-105 transition"
+                        >
+                            Entrar
+                        </button>
+                    </>
+                ) : (
+                    <Loader />
+                )}
             </form>
         </div>
     );
