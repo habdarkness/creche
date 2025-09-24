@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClipboardUser, faMoon, faSun, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faClipboardUser, faMoon, faSun, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useSession, signOut } from "next-auth/react";
 import { capitalize } from "@/lib/capitalize";
 import { useSearch, useTab } from "@/components/Contexts";
@@ -37,7 +37,9 @@ export default function Header() {
 
     useEffect(() => {
         if (session) { setUserName(capitalize(session.user.name, true)); }
-        if (status == "authenticated" && location.pathname != "/") { }
+        if (status == "authenticated" && location.pathname != "/") {
+            if (session.user.temporary) {redirect("/")}
+        }
         else if (status == "unauthenticated" && location.pathname != "/") { router.push("/") }
     }, [session, status]);
 

@@ -18,6 +18,6 @@ RESETA SE DER ERRO
 docker-compose exec web npx prisma migrate reset
 
 VER O DB
-npx prisma studio
+docker-compose exec web npx prisma studio
 
 lembra de ver se o host do prisma studio está nas ports do docker-compose.yml

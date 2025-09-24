@@ -3,7 +3,6 @@ import { faChevronLeft, faChevronRight, faFloppyDisk, faXmark } from "@fortaweso
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Loader from "./Loader";
 import { capitalize } from "@/lib/capitalize";
-import PageButton from "./PageButton";
 import FormButton from "./FormButton";
 
 type Props = {

@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { getServerSession, NextAuthOptions } from "next-auth";
+import { use } from "react";
 
 const prisma = new PrismaClient();
 
@@ -21,15 +22,16 @@ export const authOptions: NextAuthOptions = {
                 });
 
                 if (!user) return null;
-
                 const isValid = await bcrypt.compare(credentials.password, user.password);
                 if (!isValid) return null;
-
+                const isTemporary = await bcrypt.compare(user.token_password, user.password);
+                
                 return {
                     id: user.id.toString(),
                     name: user.name,
                     email: user.email,
                     level: user.level,
+                    temporary: isTemporary,
                 };
             },
         }),

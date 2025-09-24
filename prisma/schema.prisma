@@ -13,7 +13,7 @@ model User {
   email           String    @unique
   password        String
   token_password  String
-  type            String
+  type            String    @default("user")
   level           Int
   students        Student[]
   createdAt       DateTime  @default(now())

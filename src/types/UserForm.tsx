@@ -4,23 +4,21 @@ export class UserForm {
     id = -1;
     name = "";
     email = "";
-    password = "";
+    token_password = "";
     level = 1;
+    send_token = true;
 
     constructor(data: Partial<UserForm> = {}) {
-        for (const key in data) {
-            const value = data[key as keyof UserForm];
-            if (value !== null && value !== undefined) {
-                (this as any)[key] = value;
-            }
-        }
+        Object.assign(this, data);
     }
+
+
     getData() {
         return {
             id: this.id == -1 ? undefined : this.id,
             name: this.name,
             email: this.email,
-            password: this.password,
+            ...(this.send_token ? {token_password : this.token_password} : {}),
             level: this.level
         }
     }
@@ -35,8 +33,7 @@ export class UserForm {
 const loginSchema = z.object({
     name: z.string().min(1, "Nome inválido"),
     email: z.email("Email inválido"),
-    password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-    level: z.number().int()
+    level: z.number().int(),
 });
 
 

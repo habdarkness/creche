@@ -1,8 +1,6 @@
 "use client";
-import { faPlus, faTrash, IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useEffect } from "react";
-import Switch from "./Switch";
+import React from "react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 type Props = {

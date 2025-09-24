@@ -2,22 +2,23 @@
 
 import { useTab } from "@/components/Contexts";
 import Loader from "@/components/Loader";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 const inputStyle = "p-2 rounded text-base font-normal bg-background-darker";
 
 export default function Home() {
     const { data: session, status } = useSession();
     const { setTab } = useTab();
-    const [form, setForm] = useState({ email: "", pass: "" });
+    const [form, setForm] = useState({ email: "", pass: "", confirm_pass: "" });
     const [error, setError] = useState("");
 
     useEffect(() => {
-        if (status == "authenticated") {
-            setTab("usuarios")
-            redirect("usuarios")
+        if (status == "authenticated" && !session.user.temporary) {
+            setTab("usuarios");
+            redirect("usuarios");
         }
     }, [session, status])
 
@@ -30,14 +31,36 @@ export default function Home() {
         event.preventDefault();
         setError("");
 
-        const res = await signIn("credentials", {
-            redirect: false,
-            email: "hugo@email.com",
-            password: "senha123"
-        });
-
-        if (res?.error) { setError("Usuário ou senha inválidos"); }
-        else { console.log("Login feito com sucesso!", res); }
+        if (session?.user.temporary) {
+            if (form.pass != form.confirm_pass) {return setError("Senhas diferents")}
+            if (form.pass.length < 6) {return setError("Senha inválida")}
+            try {
+                const res = await fetch("/api/user", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({id: session.user.id, password: form.pass})
+                })
+                const data = await res.json();
+                if (!res.ok) throw data.error;
+                signOut();
+            }
+            catch(error) {
+                return Swal.fire({
+                    title: "Erro ao criar senha",
+                    text: String(error),
+                    icon: "error"
+                });
+            }
+        }
+        else {
+            const res = await signIn("credentials", {
+                redirect: false,
+                email: form.email,
+                password: form.pass
+            });
+            if (res?.error) { setError("Usuário ou senha inválidos"); }
+            else { console.log("Login feito com sucesso!", res); }
+        }
     }
 
     return (
@@ -47,7 +70,9 @@ export default function Home() {
                 onSubmit={handleSubmit}
             >
                 <h1>Login</h1>
-                {status == "unauthenticated" ? (
+                {status == "loading" ? (
+                    <Loader />
+                ) : status == "unauthenticated" ? (
                     <>
                         <input
                             id="email"
@@ -71,9 +96,32 @@ export default function Home() {
                             Entrar
                         </button>
                     </>
-                ) : (
-                    <Loader />
-                )}
+                ) : session?.user.temporary && (
+                    <>
+                        <input
+                            id="pass"
+                            type="password"
+                            placeholder="Senha"
+                            className={inputStyle}
+                            onChange={handleChange}
+                        />
+                        {error && <p className="text-red-400">{error}</p>}
+                        <input
+                            id="confirm_pass"
+                            type="password"
+                            placeholder="Confirme a senha"
+                            className={inputStyle}
+                            onChange={handleChange}
+                        />
+                        <button
+                            type="submit"
+                            className="bg-primary text-lg px-2 py-1 rounded-full hover:scale-105 transition"
+                        >
+                            Criar senha
+                        </button>
+                    </>
+                )
+            }
             </form>
         </div>
     );
