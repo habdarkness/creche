@@ -12,8 +12,8 @@ export async function GET(request: Request) {
     const id = searchParams.get("id");
 
     let student;
-    if (id) { student = await prisma.student.findUnique({ where: { id: Number(id) }, include: { parent: true } }); }
-    else { student = await prisma.student.findMany({ include: { parent: true } }); }
+    if (id) { student = await prisma.student.findUnique({ where: { id: Number(id) }, include: { guardian: true } }); }
+    else { student = await prisma.student.findMany({ include: { guardian: true } }); }
 
     return NextResponse.json(student);
 }
@@ -32,12 +32,12 @@ export async function POST(request: Request) {
             student = await prisma.student.update({
                 where: { id: id_int },
                 data: { name, guardian_id, birthday, gender },
-                include: { parent: true }
+                include: { guardian: true }
             });
         }
         else {
             if (!name || !guardian_id || !birthday || !gender) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
-            student = await prisma.student.create({ data: { name, guardian_id, birthday, gender }, include: { parent: true } });
+            student = await prisma.student.create({ data: { name, guardian_id, birthday, gender }, include: { guardian: true } });
         };
         return NextResponse.json({ message: id ? "Estudante atualizado" : "Estudante criado", student });
     }
