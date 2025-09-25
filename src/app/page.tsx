@@ -83,6 +83,7 @@ export default function Home() {
                             type="text"
                             placeholder="Email"
                             className={inputStyle}
+                            value={form.email}
                             onChange={handleChange}
                         />
                         <input
@@ -90,6 +91,7 @@ export default function Home() {
                             type="password"
                             placeholder="Senha"
                             className={inputStyle}
+                            value={form.pass}
                             onChange={handleChange}
                         />
                         {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -107,6 +109,7 @@ export default function Home() {
                             type="password"
                             placeholder="Senha"
                             className={inputStyle}
+                            value={form.new_pass}
                             onChange={handleChange}
                         />
                         {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -115,6 +118,7 @@ export default function Home() {
                             type="password"
                             placeholder="Confirme a senha"
                             className={inputStyle}
+                            value={form.confirm_pass}
                             onChange={handleChange}
                         />
                         <button

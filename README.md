@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Projeto com Docker + Prisma
 
-## Getting Started
+Este projeto roda em containers Docker e utiliza **Prisma ORM** para gerenciamento do banco de dados.
 
-First, run the development server:
+---
+
+## 📦 Subir os containers
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker-compose up -d --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Isso irá construir a aplicação e iniciar os serviços em segundo plano.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🗄️ Banco de Dados
 
-## Learn More
+### Criar o banco e aplicar as migrations
+```bash
+docker-compose exec web npx prisma migrate dev --name init
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Resetar o banco de dados (⚠️ apaga tudo)
+```bash
+docker-compose exec web npx prisma migrate reset
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 👤 Usuário Admin
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Para criar um usuário administrador (email: administrador@email.com senha: 123456):
+```bash
+docker-compose exec web npx tsx src/scripts/createUser.ts
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🔍 Visualizar o banco de dados
+
+Abrir o Prisma Studio (interface gráfica do banco):
+```bash
+docker-compose exec web npx prisma studio
+```
+
+---
+
+## 🐚 Acessar o container
+
+Entrar no shell do container `web`:
+```bash
+docker-compose exec web sh
+```
+
+---
+
+## 📌 Comandos úteis
+
+- **Subir containers**  
+  `docker-compose up -d --build`
+
+- **Parar containers**  
+  `docker-compose down`
+
+- **Ver logs**  
+  `docker-compose logs -f`
+
+---
+
+## 📝 Notas
+
+- Certifique-se de que o **Docker** e o **Docker Compose** estejam instalados.  
+- O banco é gerenciado pelo **Prisma ORM**.  
+- Alterações no schema (`prisma/schema.prisma`) devem ser seguidas de:
+  ```bash
+  docker-compose exec web npx prisma migrate dev --name <nome_da_migration>
+  ```
+
+---
