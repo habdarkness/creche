@@ -80,10 +80,10 @@ export default function Header() {
                                     Usuários
                                 </button>
                                 <button
-                                    onClick={() => changeTab("alunos")}
-                                    className={`px-2 py-1 rounded-full ${tab == "alunos" ? "bg-background text-primary" : "hover:bg-background/50"} transition`}
+                                    onClick={() => changeTab("estudantes")}
+                                    className={`px-2 py-1 rounded-full ${tab == "estudantes" ? "bg-background text-primary" : "hover:bg-background/50"} transition`}
                                 >
-                                    Alunos
+                                    Estudantes
                                 </button>
                             </div>
                             <div className="mx-auto">

@@ -4,11 +4,11 @@ docker-compose up -d --build
 CRIAR O DB
 docker-compose exec web npx prisma migrate dev --name init
 
+RESETA SE PRECISAR (TENTA CRIAR DE NOVO O DB DEPOIS)
+docker-compose exec web npx prisma migrate reset
+
 ADICIONA UM ADMIN
 docker-compose exec web npx tsx src/scripts/createUser.ts
-
-RESETA SE DER ERRO
-docker-compose exec web npx prisma migrate reset
 
 VER O DB
 docker-compose exec web npx prisma studio

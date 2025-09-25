@@ -23,12 +23,11 @@ export default function FormInput({
     type = "text", options,
     value, onChange, editable = true
 }: Props) {
-    function initialCapitalize(str: string): string { return str.charAt(0).toUpperCase() + str.slice(1); }
     return (
         <div className={`flex flex-col ${fullWidth ? "w-full" : ""}`}>
             {type == "bool" ? (
                 <div className="flex items-center gap-2 text-primary font-bold">
-                    {label} <Switch checked={value as boolean} setChecked={(checked) => onChange({ target: { name: id, value: checked } } as any)} />
+                    {label} <Switch checked={value as boolean} setChecked={(checked) => onChange({ target: { id, value: checked ? "true" : "false" } } as any)} />
                 </div>
             ) : (
                 <>

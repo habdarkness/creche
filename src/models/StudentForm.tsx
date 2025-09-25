@@ -18,7 +18,7 @@ export class StudentForm {
             name: this.name,
             birthday: this.birthday,
             gender: this.gender,
-            parent_id: this.guardian_id
+            guardian_id: this.guardian_id
         }
     }
     verify() {

@@ -29,7 +29,7 @@ export default function Users() {
                 const dataStudent = await resStudent.json();
                 setStudents(dataStudent);
 
-                const resGuardian = await fetch("/api/user?guardian");
+                const resGuardian = await fetch("/api/user?guardian=true");
                 const dataGuardian = await resGuardian.json();
                 setGuardians(dataGuardian);
             }
@@ -41,14 +41,20 @@ export default function Users() {
     function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { id, value } = event.target;
         setForm(prev => new StudentForm({
-            ...prev, [id]: id === "level" ? Number(value) : value
+            ...prev,
+            [id]: id === "guardian_id"
+                ? Number(value)
+                : id === "birthday"
+                    ? (value ? new Date(value) : null)
+                    : value
         }));
     }
     async function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
+        console.log(form.getData())
         const message = form.verify()
         if (message) return Swal.fire({
-            title: "Erro no cadastro/atualização",
+            title: "Erro de validação",
             text: message,
             icon: "error"
         });
@@ -95,11 +101,11 @@ export default function Users() {
     if (loading) return (<div className="flex items-center justify-center h-full"><Loader /></div>)
     return (
         <div className="flex flex-col m-4 h-full">
-            <h1 className="text-2xl font-bold mb-4">Usuários</h1>
+            <h1 className="text-2xl font-bold mb-4">Estudantes</h1>
             <ul className=" grid grid-cols-4 w-full gap-4">
                 {students.map(student => (
                     <li key={student.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
-                        setForm(new StudentForm());
+                        setForm(new StudentForm({ ...student }));
                         setFormVisible(true);
                     }}>
                         <p className="font-bold text-lg">{capitalize(student.name)}</p>
@@ -121,11 +127,18 @@ export default function Users() {
             </ul>
             <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit} submit={form.id == -1 ? "Cadastrar" : "Atualizar"}>
                 <FormInput id="name" label="Nome" icon={faUser} value={form.name} onChange={handleChange} />
-                <FormInput id="bithday" type="date" label="Aniversário" icon={faCakeCandles} value={form.birthday?.toDateString() ?? ""} onChange={handleChange} />
+                <FormInput
+                    id="birthday"
+                    type="date"
+                    label="Aniversário"
+                    icon={faCakeCandles}
+                    value={form.birthday ? prismaDate(form.birthday).toISOString().substring(0, 10) : ""}
+                    onChange={handleChange}
+                />
                 <FormInput id="gender" options={["M", "F"]} label="Genero" icon={faVenusMars} value={form.gender} onChange={handleChange} />
-                <FormInput id="guardian_id" options={guardians.map((guardian): [number, string] => [guardian.id, guardian.name])} label="Responsável" value={form.guardian_id} onChange={handleChange} />
+                <FormInput id="guardian_id" options={[[-1, "Selecione um responsavel"], ...guardians.map((guardian): [number, string] => [guardian.id, guardian.name])]} label="Responsável" value={form.guardian_id} onChange={handleChange} />
             </TabForm>
-            <PageButton text="Cadastrar" icon={faUser} onClick={() => setFormVisible(true)} />
+            <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new StudentForm()); setFormVisible(true) }} />
         </div>
     );
 }

@@ -19,6 +19,13 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
     ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",       // ignora uso de 'any'
+      "@typescript-eslint/no-unused-vars": "warn",      // apenas aviso, não erro
+      "react-hooks/exhaustive-deps": "warn",            // aviso sobre useEffect
+      "@typescript-eslint/ban-ts-comment": "off",       // se usar ts-ignore
+      "@typescript-eslint/no-non-null-assertion": "off" // se usar !
+    },
   },
 ];
 

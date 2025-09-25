@@ -23,11 +23,13 @@ export default function Users() {
             try {
                 setLoading(true);
                 const res = await fetch("/api/user");
-                console.log(res);
                 const data = await res.json();
-                setUsers(data);
+                setUsers(Array.isArray(data) ? data : []);
             }
-            catch (error) { console.error("Erro ao buscar usuários:", error); }
+            catch (error) {
+                console.error("Erro ao buscar usuários:", error);
+                setUsers([]);
+            }
             finally { setLoading(false); }
         };
         fetchUsers();
@@ -37,8 +39,9 @@ export default function Users() {
     }
     function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { id, value } = event.target;
+        alert(id)
         setForm(prev => new UserForm({
-            ...prev, [id]: id === "level" ? Number(value) : value
+            ...prev, [id]: id === "level" ? Number(value) : id == "guardian" ? value == "true" : value
         }));
     }
     async function handleSubmit(event: React.FormEvent) {
@@ -95,6 +98,7 @@ export default function Users() {
                     <li key={user.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
                         setForm(new UserForm({ ...user, send_token: false }));
                         setFormVisible(true);
+                        console.log(form)
                     }}>
                         <p className="font-bold text-lg">{capitalize(user.name)}</p>
                         <p className="text-sm">{capitalize(user.type)}</p>
@@ -105,7 +109,7 @@ export default function Users() {
             <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit}>
                 <FormInput id="name" label="Nome" icon={faUser} value={form.name} onChange={handleChange} />
                 <FormInput id="email" label="Email" icon={faEnvelope} value={form.email} onChange={handleChange} />
-                <div className="flex">
+                <div className="flex items-end gap-2">
                     <FormInput
                         id="type"
                         options={Object.keys(userTypes)}
@@ -124,7 +128,7 @@ export default function Users() {
                     )}
                 </div>
             </TabForm>
-            <PageButton text="Cadastrar" icon={faUser} onClick={() => setFormVisible(true)} />
+            <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new UserForm()); setFormVisible(true); }} />
         </div>
     );
 }
