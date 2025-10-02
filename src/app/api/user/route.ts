@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { VerifyUser } from "@/lib/auth";
+import { generateToken } from "@/lib/generateToken";
 
 const prisma = new PrismaClient();
 
@@ -11,7 +12,6 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
-    const guardian = searchParams.get("guardian");
 
     let users;
     if (id) {
@@ -21,7 +21,8 @@ export async function GET(request: Request) {
     }
     else {
         users = await prisma.user.findMany({
-            where: { level: { gte: session.level }, ...(guardian ? { guardian: true } : {}) }
+            where: { level: { gte: session.level } },
+            orderBy: { name: "asc" }
         });
     }
 
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
     if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
 
     const data = await request.json();
-    const { id, name, email, password, token_password, level, type, guardian } = data;
+    const { id, name, email, phone, password, token_password, level, type } = data;
     if (level && level <= session.level && session.id != id) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
     try {
         let user;
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
             user = await prisma.user.update({
                 where: { id: id_int },
                 data: {
-                    name, email, level, type, guardian,
+                    name, phone, email, level, type,
                     ...(
                         password
                             ? { password: hashedPassword }
@@ -61,9 +62,10 @@ export async function POST(request: Request) {
             });
         }
         else {
-            if (!name || !email || !level || !token_password || !type || guardian == undefined) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
-            const hashedPassword = await bcrypt.hash(token_password, 10);
-            user = await prisma.user.create({ data: { name, email, level, type, guardian, password: hashedPassword, token_password: hashedPassword } });
+            console.log({ name, email, level, type, token_password });
+            if (!name || !email || !level || !type || !phone) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
+            const hashedPassword = await bcrypt.hash(generateToken(), 10);
+            user = await prisma.user.create({ data: { name, email, phone, level, type, password: hashedPassword, token_password: hashedPassword } });
         };
         return NextResponse.json({ message: id ? "Usuário atualizado" : "Usuário criado", user, });
     }

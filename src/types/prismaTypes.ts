@@ -1,3 +1,4 @@
-import { Student, User } from "@prisma/client";
+import { Guardian, Student } from "@prisma/client";
 
-export type StudentWithRelations = Student & { guardian: User }
+export type StudentWithRelations = Student & { guardian: Guardian }
+export type GuadianWithRelations = Guardian & { students: Student[] }

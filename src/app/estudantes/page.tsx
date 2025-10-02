@@ -1,6 +1,5 @@
 "use client";
 
-import FormButton from "@/components/FormButton";
 import FormInput from "@/components/FormInput";
 import Loader from "@/components/Loader";
 import PageButton from "@/components/PageButton";
@@ -11,11 +10,12 @@ import { faCakeCandles, faUser, faVenusMars } from "@fortawesome/free-solid-svg-
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { StudentForm } from "../../models/StudentForm";
-import { User } from "@prisma/client";
+import { Guardian } from "@prisma/client";
+import { prismaDate } from "@/lib/prismaLib";
 
-export default function Users() {
+export default function Students() {
     const [students, setStudents] = useState<StudentWithRelations[]>([]);
-    const [guardians, setGuardians] = useState<User[]>([]);
+    const [guardians, setGuardians] = useState<Guardian[]>([]);
     const [loading, setLoading] = useState(true);
     const [formVisible, setFormVisible] = useState(false);
     const [form, setForm] = useState<StudentForm>(new StudentForm());
@@ -29,7 +29,7 @@ export default function Users() {
                 const dataStudent = await resStudent.json();
                 setStudents(dataStudent);
 
-                const resGuardian = await fetch("/api/user?guardian=true");
+                const resGuardian = await fetch("/api/guardian");
                 const dataGuardian = await resGuardian.json();
                 setGuardians(dataGuardian);
             }
@@ -92,11 +92,6 @@ export default function Users() {
                 icon: "error"
             });
         }
-    }
-    function prismaDate(date: Date) {
-        return date instanceof Date
-            ? date
-            : new Date(date);
     }
     if (loading) return (<div className="flex items-center justify-center h-full"><Loader /></div>)
     return (

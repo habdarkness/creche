@@ -1,11 +1,13 @@
 "use client";
 
+import { useSearch } from "@/components/Contexts";
 import FormButton from "@/components/FormButton";
 import FormInput from "@/components/FormInput";
 import Loader from "@/components/Loader";
 import PageButton from "@/components/PageButton";
 import TabForm from "@/components/TabForm";
 import { capitalize } from "@/lib/capitalize";
+import { generateToken } from "@/lib/generateToken";
 import { UserForm, userTypes } from "@/models/UserForm";
 import { faArrowUp19, faBriefcase, faEnvelope, faKey, faUser, faUserTie } from "@fortawesome/free-solid-svg-icons";
 import { User } from "@prisma/client";
@@ -17,6 +19,7 @@ export default function Users() {
     const [loading, setLoading] = useState(true);
     const [formVisible, setFormVisible] = useState(false);
     const [form, setForm] = useState<UserForm>(new UserForm({ token_password: generateToken() }));
+    const { search } = useSearch();
 
     useEffect(() => {
         async function fetchUsers() {
@@ -34,12 +37,8 @@ export default function Users() {
         };
         fetchUsers();
     }, []);
-    function generateToken() {
-        return String(Math.floor(100000 + Math.random() * 900000));
-    }
     function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { id, value } = event.target;
-        alert(id)
         setForm(prev => new UserForm({
             ...prev, [id]: id === "level" ? Number(value) : id == "guardian" ? value == "true" : value
         }));
@@ -90,11 +89,16 @@ export default function Users() {
     }
 
     if (loading) return (<div className="flex items-center justify-center h-full"><Loader /></div>)
+    const filteredUsers = users.filter(user => {
+        const term = search.toLowerCase();
+        const userTerm = (user.name + user.email + user.type).toLowerCase();
+        return userTerm.includes(term);
+    })
     return (
         <div className="flex flex-col m-4 h-full">
             <h1 className="text-2xl font-bold mb-4">Usuários</h1>
             <ul className=" grid grid-cols-4 w-full gap-4">
-                {users.map(user => (
+                {filteredUsers.map(user => (
                     <li key={user.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
                         setForm(new UserForm({ ...user, send_token: false }));
                         setFormVisible(true);
@@ -109,18 +113,15 @@ export default function Users() {
             <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit}>
                 <FormInput id="name" label="Nome" icon={faUser} value={form.name} onChange={handleChange} />
                 <FormInput id="email" label="Email" icon={faEnvelope} value={form.email} onChange={handleChange} />
-                <div className="flex items-end gap-2">
-                    <FormInput
-                        id="type"
-                        options={Object.keys(userTypes)}
-                        label="Nível de acesso"
-                        icon={faBriefcase}
-                        value={form.type}
-                        onChange={handleChange}
-                        fullWidth
-                    />
-                    <FormInput id="guardian" type="bool" label="Responsavel" value={form.guardian} onChange={handleChange} />
-                </div>
+                <FormInput
+                    id="type"
+                    options={Object.keys(userTypes)}
+                    label="Nível de acesso"
+                    icon={faBriefcase}
+                    value={form.type}
+                    onChange={handleChange}
+                    fullWidth
+                />
                 <div className="flex gap-2 items-center absolute right-[50%] bottom-5 translate-x-1/2">
                     <FormButton submit text={form.id == -1 ? "Cadastrar" : "Atualizar"} />
                     {form.id != -1 && (

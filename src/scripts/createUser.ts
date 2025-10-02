@@ -12,7 +12,7 @@ async function createUser() {
             password: passwordHash,
             token_password: passwordHash,
             type: "Administrador",
-            guardian: false,
+            phone: "98999999999",
             level: 1
         }
     });

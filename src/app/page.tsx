@@ -73,7 +73,7 @@ export default function Home() {
                 className="flex flex-col justify-center items-center text-2xl font-bold bg-background p-4 rounded-xl gap-4"
                 onSubmit={handleSubmit}
             >
-                <h1>Login</h1>
+                <h1>{session?.user.temporary ? "Redefinir Senha" : "Login"}</h1>
                 {status == "loading" ? (
                     <Loader />
                 ) : status == "unauthenticated" ? (

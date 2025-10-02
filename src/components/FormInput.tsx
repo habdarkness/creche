@@ -32,7 +32,7 @@ export default function FormInput({
             ) : (
                 <>
                     <label htmlFor={id} className="text-primary font-bold">{label}</label>
-                    <div className="flex gap-1 bg-primary-darker text-white rounded-md p-2 w-full">
+                    <div className="flex gap-1 bg-primary-darker text-white rounded-md p-2 w-full items-center">
                         {icon && (<FontAwesomeIcon icon={icon} />)}
                         {options ? (
                             <select

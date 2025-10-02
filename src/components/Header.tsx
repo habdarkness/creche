@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClipboardUser, faMoon, faSun, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { faClipboardUser, faMoon, faSun, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useSession, signOut } from "next-auth/react";
 import { capitalize } from "@/lib/capitalize";
 import { useSearch, useTab } from "@/components/Contexts";
@@ -69,26 +69,34 @@ export default function Header() {
         <header className="w-full bg-background p-2" onMouseLeave={() => setHovered(false)}>
             <div className="flex flex-row items-center gap-4 w-full">
                 <div className="flex gap-4 w-full items-center">
-                    <h1>Creche Estrela</h1>
+                    <h1 className="text-2xl font-bold">Estrela do Oriente</h1>
                     {session && !session.user.temporary && (
                         <>
                             <div className="flex bg-background-darker rounded-full p-1">
-                                <button
-                                    onClick={() => changeTab("usuarios")}
-                                    className={`px-2 py-1 rounded-full  ${tab == "usuarios" ? "bg-background text-primary" : "hover:bg-background/50"} transition`}
-                                >
-                                    Usuários
-                                </button>
-                                <button
-                                    onClick={() => changeTab("estudantes")}
-                                    className={`px-2 py-1 rounded-full ${tab == "estudantes" ? "bg-background text-primary" : "hover:bg-background/50"} transition`}
-                                >
-                                    Estudantes
-                                </button>
+                                {session.user.type == "Administrador" && (
+                                    <>
+                                        <button
+                                            onClick={() => changeTab("estudantes")}
+                                            className={`px-2 py-1 rounded-full ${tab == "estudantes" ? "bg-background text-primary" : "hover:bg-background/50"} transition`}
+                                        >
+                                            Estudantes
+                                        </button>
+                                        <button
+                                            onClick={() => changeTab("responsaveis")}
+                                            className={`px-2 py-1 rounded-full ${tab == "responsaveis" ? "bg-background text-primary" : "hover:bg-background/50"} transition`}
+                                        >
+                                            Responsáveis
+                                        </button>
+                                        <button
+                                            onClick={() => changeTab("usuarios")}
+                                            className={`px-2 py-1 rounded-full  ${tab == "usuarios" ? "bg-background text-primary" : "hover:bg-background/50"} transition`}
+                                        >
+                                            Usuários
+                                        </button>
+                                    </>
+                                )}
                             </div>
-                            <div className="mx-auto">
-                                <SearchBar value={search} onChange={setSearch} />
-                            </div>
+                            <div className="mx-auto"><SearchBar value={search} onChange={setSearch} /></div>
                         </>
                     )}
                 </div>
@@ -107,6 +115,13 @@ export default function Header() {
                                     border-2 border-background-darker text-reverse transition-all cursor-pointer
                                 `}
                         >
+                            <div className="flex gap-2 hover:text-primary hover:scale-105 transition" onClick={() => {
+                                setTab("");
+                                redirect("conta");
+                            }}>
+                                <h1 className="text-xl whitespace-nowrap">Minha Conta</h1>
+                                <FontAwesomeIcon icon={faUser} className="text-2xl" />
+                            </div>
                             <div className="flex gap-2 hover:text-primary hover:scale-105 transition" onClick={() => signOut()}>
                                 <h1 className="text-xl whitespace-nowrap">Sair</h1>
                                 <FontAwesomeIcon icon={faRightFromBracket} className="text-2xl" />

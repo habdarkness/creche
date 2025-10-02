@@ -11,12 +11,11 @@ model User {
   id              Int       @id @default(autoincrement())
   name            String
   email           String    @unique
+  phone           String    @unique
   password        String
   token_password  String
-  type            String    @default("Usuário")
+  type            String
   level           Int       @default(3)
-  guardian        Boolean   @default(true) 
-  students        Student[]
   createdAt       DateTime  @default(now())
 }
 
@@ -24,9 +23,17 @@ model Student {
   id              Int       @id @default(autoincrement())
   name            String
   birthday        DateTime
-  gender          String    @default("M")
+  gender          String
   guardian_id     Int
-  guardian        User      @relation(fields: [guardian_id], references: [id])
+  guardian        Guardian  @relation(fields: [guardian_id], references: [id])
   createdAt       DateTime  @default(now())
 }
 
+model Guardian {
+  id              Int       @id @default(autoincrement())
+  name            String
+  email           String
+  phone           String
+  students        Student[]
+  createdAt       DateTime  @default(now())
+}
