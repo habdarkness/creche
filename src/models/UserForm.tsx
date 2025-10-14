@@ -1,6 +1,7 @@
 import { z } from "zod";
 export const userTypes: Record<string, number> = {
     "Administrador": 1,
+    "Secretário": 1,
     "Professor": 2,
     "Psicologos": 2,
 }

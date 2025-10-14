@@ -1,39 +1,170 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-  id              Int       @id @default(autoincrement())
-  name            String
-  email           String    @unique
-  phone           String    @unique
-  password        String
-  token_password  String
-  type            String
-  level           Int       @default(3)
-  createdAt       DateTime  @default(now())
-}
-
-model Student {
-  id              Int       @id @default(autoincrement())
-  name            String
-  birthday        DateTime
-  gender          String
-  guardian_id     Int
-  guardian        Guardian  @relation(fields: [guardian_id], references: [id])
-  createdAt       DateTime  @default(now())
+    id             Int      @id @default(autoincrement())
+    name           String
+    email          String   @unique
+    phone          String   @unique
+    password       String
+    token_password String
+    type           String
+    level          Int      @default(3)
+    active         Boolean  @default(true)
+    createdAt      DateTime @default(now())
 }
 
 model Guardian {
-  id              Int       @id @default(autoincrement())
-  name            String
-  email           String
-  phone           String
-  students        Student[]
-  createdAt       DateTime  @default(now())
+    id         Int       @id @default(autoincrement())
+    name       String
+    cpf        String?
+    rg         String?
+    email      String?
+    phone      String?
+    work_place String?
+    students   Student[]
+    createdAt  DateTime  @default(now())
 }
+
+model Student {
+    id           Int      @id @default(autoincrement())
+    status       String   @default("pré-matriculado")
+    name         String
+    birthday     DateTime
+    gender       String
+    color        String
+    twins        Boolean  @default(false)
+    has_brothers Boolean  @default(false)
+
+    // SUS
+    sus Json
+
+    //saúde e deficiências
+    health_issues    String?
+    food_restriction String?
+    allergy          String?
+    mobility         String?
+    disabilities     Json?
+    special_needs    String?
+    classification   String?
+
+    //auxílios sociais
+    gov_aid    String?
+    nis_number String?
+
+    //família
+    family Json? //{name, age, kinship, schooling, occupation, income_value} calculaveis (renda familiar, renda per capita)
+
+    //série
+    school_year  String?
+    school_grade String?
+
+    //pessoas autorizadas
+    authorized Json? //name, kinship, rg, phone
+
+    address   Address?
+    document  Documents?
+    housing   Housing?
+    asset     Assets?
+    guardians Guardian[]
+
+    createdAt DateTime @default(now())
+}
+
+model Address {
+    id           Int      @id @default(autoincrement())
+    street       String?
+    number       String?
+    reference    String?
+    neighborhood String?
+    city         String?
+    state        String?
+    cep          String?
+    phone_home   String?
+    phone_alt    String?
+    student_id   Int?     @unique
+    student      Student? @relation(fields: [student_id], references: [id])
+}
+
+model Documents {
+    id              Int       @id @default(autoincrement())
+    birth_cert      String?
+    registry_city   String?
+    birth_city      String?
+    registry_office String?
+    cpf             String?
+    rg              String?
+    rg_issue_date   DateTime?
+    rg_issuer       String?
+    student_id      Int?      @unique
+    student         Student?  @relation(fields: [student_id], references: [id])
+}
+
+model Housing {
+    id            Int      @id @default(autoincrement())
+    type          String? //própria, cedida, alugada
+    rent_value    Float?
+    rooms         Int?
+    floor_type    String?
+    building_type String?
+    roof_type     String?
+    sewer         Boolean?
+    septic_tank   Boolean?
+    electricity   Boolean?
+    water         Boolean?
+    student_id    Int?     @unique
+    student       Student? @relation(fields: [student_id], references: [id])
+}
+
+model Assets {
+    id              Int      @id @default(autoincrement())
+    tv              Boolean? @default(false)
+    dvd             Boolean? @default(false)
+    radio           Boolean? @default(false)
+    computer        Boolean? @default(false)
+    notebook        Boolean? @default(false)
+    phone_fixed     Boolean? @default(false)
+    phone_mobile    Boolean? @default(false)
+    tablet          Boolean? @default(false)
+    internet        Boolean? @default(false)
+    cable_tv        Boolean? @default(false)
+    stove           Boolean? @default(false)
+    fridge          Boolean? @default(false)
+    freezer         Boolean? @default(false)
+    microwave       Boolean? @default(false)
+    washing_machine Boolean? @default(false)
+    air_conditioner Boolean? @default(false)
+    bicycle         Boolean? @default(false)
+    motorcycle      Boolean? @default(false)
+    car             Boolean? @default(false)
+    student_id      Int?     @unique
+    student         Student? @relation(fields: [student_id], references: [id])
+}
+
+// model FamilyMember {
+//     id           Int     @id @default(autoincrement())
+//     name         String
+//     age          Int?
+//     kinship      String?
+//     schooling    String?
+//     occupation   String?
+//     income_value Float?
+//     student_id   Int
+//     student      Student @relation(fields: [student_id], references: [id])
+// }
+
+// model AuthorizedPerson {
+//     id         Int     @id @default(autoincrement())
+//     name       String
+//     kinship    String?
+//     rg         String?
+//     phone      String?
+//     student_id Int
+//     student    Student @relation(fields: [student_id], references: [id])
+// }

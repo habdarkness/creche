@@ -2,7 +2,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faChevronLeft, faChevronRight, faFloppyDisk, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Loader from "./Loader";
-import { capitalize } from "@/lib/capitalize";
+import { capitalize } from "@/lib/format";
 import FormButton from "./FormButton";
 
 type Props = {

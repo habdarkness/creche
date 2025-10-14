@@ -4,9 +4,9 @@ import FormInput from "@/components/FormInput";
 import Loader from "@/components/Loader";
 import PageButton from "@/components/PageButton";
 import TabForm from "@/components/TabForm";
-import { capitalize } from "@/lib/capitalize";
+import { capitalize } from "@/lib/format";
 import { GuadianWithRelations } from "@/types/prismaTypes";
-import { faCakeCandles, faEnvelope, faPhone, faUser, faVenusMars } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faPhone, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { GuardianForm } from "@/models/GuardianForm";
@@ -94,7 +94,7 @@ export default function Guardians() {
                     }}>
                         <p className="font-bold text-lg">{capitalize(guardian.name)}</p>
                         <p className="text-sm">{guardian.email}</p>
-                        <p className="text-sm">{capitalize(guardian.phone)}</p>
+                        {guardian.phone && (<p className="text-sm">{capitalize(guardian.phone)}</p>)}
                     </li>
                 ))}
             </ul>

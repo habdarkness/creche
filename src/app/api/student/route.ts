@@ -12,8 +12,8 @@ export async function GET(request: Request) {
     const id = searchParams.get("id");
 
     let student;
-    if (id) { student = await prisma.student.findUnique({ where: { id: Number(id) }, include: { guardian: true } }); }
-    else { student = await prisma.student.findMany({ include: { guardian: true } }); }
+    if (id) { student = await prisma.student.findUnique({ where: { id: Number(id) }, include: { guardians: true } }); }
+    else { student = await prisma.student.findMany({ include: { guardians: true } }); }
 
     return NextResponse.json(student);
 }
@@ -23,23 +23,37 @@ export async function POST(request: Request) {
     if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
 
     const data = await request.json();
-    const { id, name, guardian_id, birthday, gender } = data;
+    const { student, address, documents, housing, assets } = data;
     try {
-        let student;
-        if (id) {
-            const id_int = parseInt(id);
-            if (isNaN(id_int)) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
-            student = await prisma.student.update({
-                where: { id: id_int },
-                data: { name, guardian_id, birthday, gender },
-                include: { guardian: true }
-            });
-        }
-        else {
-            if (!name || !guardian_id || !birthday || !gender) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
-            student = await prisma.student.create({ data: { name, guardian_id, birthday, gender }, include: { guardian: true } });
-        };
-        return NextResponse.json({ message: id ? "Estudante atualizado" : "Estudante criado", student });
+        const id = "id" in student ? student.id : undefined;
+        if (id != undefined && isNaN(id)) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
+        await prisma.address.upsert({
+            where: { student_id: id },
+            create: address,
+            update: documents
+        });
+        await prisma.documents.upsert({
+            where: { student_id: id },
+            create: documents,
+            update: documents
+        });
+        await prisma.housing.upsert({
+            where: { student_id: id },
+            create: housing,
+            update: housing
+        });
+        await prisma.assets.upsert({
+            where: { student_id: id },
+            create: assets,
+            update: assets
+        });
+        const newStudent = await prisma.student.upsert({
+            where: { id: id },
+            create: assets,
+            update: assets,
+            include: { address: true, housing: true, document: true, asset: true, guardians: true }
+        });
+        return NextResponse.json({ message: id ? "Estudante atualizado" : "Estudante criado", newStudent });
     }
     catch (error) { return NextResponse.json({ error: "Erro ao salvar Estudante" }, { status: 500 }); }
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboardUser, faMoon, faSun, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useSession, signOut } from "next-auth/react";
-import { capitalize } from "@/lib/capitalize";
+import { capitalize } from "@/lib/format";
 import { useSearch, useTab } from "@/components/Contexts";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import SearchBar from "./SearchBar";

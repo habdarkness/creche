@@ -6,7 +6,7 @@ import FormInput from "@/components/FormInput";
 import Loader from "@/components/Loader";
 import PageButton from "@/components/PageButton";
 import TabForm from "@/components/TabForm";
-import { capitalize } from "@/lib/capitalize";
+import { capitalize } from "@/lib/format";
 import { generateToken } from "@/lib/generateToken";
 import { UserForm, userTypes } from "@/models/UserForm";
 import { faArrowUp19, faBriefcase, faEnvelope, faKey, faUser, faUserTie } from "@fortawesome/free-solid-svg-icons";
@@ -122,6 +122,7 @@ export default function Users() {
                     onChange={handleChange}
                     fullWidth
                 />
+                <FormInput id="json" label="JSON" keys={{ "teste": "string" }} value={[{}]} flexible="JSON" onChange={(e) => null} />
                 <div className="flex gap-2 items-center absolute right-[50%] bottom-5 translate-x-1/2">
                     <FormButton submit text={form.id == -1 ? "Cadastrar" : "Atualizar"} />
                     {form.id != -1 && (

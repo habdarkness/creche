@@ -4,7 +4,7 @@ import FormInput from "@/components/FormInput";
 import Loader from "@/components/Loader";
 import PageButton from "@/components/PageButton";
 import TabForm from "@/components/TabForm";
-import { capitalize } from "@/lib/capitalize";
+import { capitalize, cleanObject } from "@/lib/format";
 import { StudentWithRelations } from "@/types/prismaTypes";
 import { faCakeCandles, faUser, faVenusMars } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
@@ -100,7 +100,7 @@ export default function Students() {
             <ul className=" grid grid-cols-4 w-full gap-4">
                 {students.map(student => (
                     <li key={student.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
-                        setForm(new StudentForm({ ...student }));
+                        setForm(new StudentForm(cleanObject(student)));
                         setFormVisible(true);
                     }}>
                         <p className="font-bold text-lg">{capitalize(student.name)}</p>
@@ -121,6 +121,7 @@ export default function Students() {
                 ))}
             </ul>
             <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit} submit={form.id == -1 ? "Cadastrar" : "Atualizar"}>
+                <FormInput id="status" label="Estado" icon={faUser} value={form.status} onChange={handleChange} />
                 <FormInput id="name" label="Nome" icon={faUser} value={form.name} onChange={handleChange} />
                 <FormInput
                     id="birthday"
@@ -131,7 +132,25 @@ export default function Students() {
                     onChange={handleChange}
                 />
                 <FormInput id="gender" options={["M", "F"]} label="Genero" icon={faVenusMars} value={form.gender} onChange={handleChange} />
-                <FormInput id="guardian_id" options={[[-1, "Selecione um responsavel"], ...guardians.map((guardian): [number, string] => [guardian.id, guardian.name])]} label="Responsável" value={form.guardian_id} onChange={handleChange} />
+                <FormInput id="color" label="Cor" icon={faUser} value={form.color} onChange={handleChange} />
+                <FormInput id="twins" label="Gemeos" icon={faUser} value={form.twins} onChange={handleChange} />
+                <FormInput id="has_brothers" label="Irmãos" icon={faUser} value={form.has_brothers} onChange={handleChange} />
+                <FormInput
+                    id="sus"
+                    label="SUS"
+                    icon={faUser}
+                    keys={{ "Cadastro Nacional de Saúde": "string", "Unidade de Saúde"}}
+                    value={form.sus}
+                    onChange={handleChange}
+                />
+                <FormInput id="health_issues" label="Problemas de Saúde" icon={faUser} value={form.health_issues} onChange={handleChange} />
+                <FormInput id="food_restriction" label="Restrições de saúde" icon={faUser} value={form.food_restriction} onChange={handleChange} />
+                <FormInput id="allergy" label="Alergia" icon={faUser} value={form.allergy} onChange={handleChange} />
+                <FormInput id="mobility" label="Mobilidade" icon={faUser} value={form.mobility} onChange={handleChange} />
+                <FormInput id="disabilities" label="Debilitações" icon={faUser} value={form.disabilities} onChange={handleChange} />
+
+
+                {/* <FormInput id="guardian_id" options={[[-1, "Selecione um responsavel"], ...guardians.map((guardian): [number, string] => [guardian.id, guardian.name])]} label="Responsável" value={form.guardian_id} onChange={handleChange} /> */}
             </TabForm>
             <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new StudentForm()); setFormVisible(true) }} />
         </div>
