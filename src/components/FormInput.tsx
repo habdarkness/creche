@@ -1,10 +1,9 @@
 "use client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import React, { useMemo } from "react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import Switch from "./Switch";
 import { capitalize } from "@/lib/format";
-import { stringify } from "querystring";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 type Props = {
@@ -12,12 +11,10 @@ type Props = {
     label?: string;
     placeholder?: string;
     icon?: IconProp;
-    type?: "text" | "textarea" | "bool" | "password" | "date" | "number" | "time";
+    type?: "text" | "textarea" | "password" | "date" | "number" | "time";
     options?: [number, string][] | string[];
-    keys?: Record<string, "string" | "number" | "date">;
-    flexible?: string;
 
-    value: string | number | boolean | Record<string, string> | Record<string, string>[];
+    value: string | number | boolean | Record<string, any> | Record<string, any>[];
     editable?: boolean
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     fullWidth?: boolean;
@@ -26,21 +23,39 @@ type Props = {
 export default function FormInput({
     id, label = "", icon, fullWidth = false,
     placeholder = "Digite " + label.toLowerCase() + "...",
-    type = "text", options, keys, flexible = "",
+    type = "text", options,
     value, onChange, editable = true
 }: Props) {
-    const objectValue = typeof value === "object" ? Array.isArray(value) ? value : [value] : [];
+    const objectValue = useMemo(() => {
+        if (value && typeof value === "object") {return Array.isArray(value) ? value : [value];}
+        return [];
+    }, [value]);
+
+    const keys = useMemo(() => {
+        if (objectValue.length > 0 && typeof objectValue[0] === "object") {
+            return Object.fromEntries(
+                Object.entries(objectValue[0]).map(([k, v]) => [
+                    k,
+                    (typeof v === "object" && v instanceof Date)
+                        ? "date"
+                        : typeof v
+                ])
+            );
+        }
+        return null;
+    }, [objectValue]);
+
     return (
         <div className={`flex flex-col ${fullWidth ? "w-full" : ""}`}>
             {keys ? (
                 <div className="flex flex-col gap-2 text-white">
                     <label htmlFor={id} className="text-primary font-bold">{label}</label>
                     {objectValue.map((v, i) => (
-                        <div className="flex gap-2 items-center">
-                            <div key={i} className="grid grid-cols-[min-content_1fr] w-full bg-primary-darker p-2 rounded-md gap-2 items-center">
+                        <div key={i} className="flex gap-2 items-center">
+                            <div className="grid grid-cols-[min-content_1fr] w-full bg-primary-darker p-2 rounded-md gap-2 items-center">
                                 {Object.entries(keys).map(([key, type]) => (
                                     <React.Fragment key={key}>
-                                        <h1>{capitalize(key)}</h1>
+                                        <h1 className="text-nowrap">{capitalize(key)}</h1>
                                         <input
                                             type={type}
                                             id={id}
@@ -79,7 +94,7 @@ export default function FormInput({
                             )}
                         </div>
                     ))}
-                    {flexible && Array.isArray(value) && (
+                    {Array.isArray(value) && (
                         <button
                             type="button"
                             className="bg-primary-darker mx-auto px-2 py-1 rounded-md hover:scale-105 transition"
@@ -88,13 +103,14 @@ export default function FormInput({
                                 onChange({ target: { id, value: newValue } } as any);
                             }}
                         >
-                            Adicionar {flexible}
+                            Adicionar
                         </button>
                     )}
                 </div>
-            ) : type == "bool" ? (
+            ) : typeof value == "boolean" ? (
+
                 <div className="flex items-center gap-2 text-primary font-bold">
-                    {label} <Switch checked={value as boolean} setChecked={(checked) => onChange({ target: { id, value: checked ? "true" : "false" } } as any)} />
+                    <Switch checked={value as boolean} setChecked={(checked) => onChange({ target: { id, value: checked ? true : false } } as any)} /> {label}
                 </div>
             ) : (
                 <>
@@ -116,11 +132,11 @@ export default function FormInput({
                             >
                                 {options.map((opt) =>
                                     Array.isArray(opt) ? (
-                                        <option key={opt[0]} value={opt[0]} className="text-primary">
+                                        <option key={opt[0]} value={opt[0]} className="text-primary-darker font-bold">
                                             {opt[1]}
                                         </option>
                                     ) : (
-                                        <option key={opt} value={opt} className="text-primary">
+                                        <option key={opt} value={opt} className="text-primary-darker font-bold">
                                             {opt}
                                         </option>
                                     )

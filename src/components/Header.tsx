@@ -41,7 +41,7 @@ export default function Header() {
         if (status == "authenticated" && pathname != "/") {
             if (session.user.temporary) { router.push("/") }
         }
-        else if (status == "unauthenticated" && pathname != "/") { router.push("/") }
+        else if (status == "unauthenticated" && pathname != "/estudantes") { router.push("estudantes") }
     }, [session, status, pathname]);
 
     function setTheme(light: boolean) {

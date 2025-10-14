@@ -1,50 +1,50 @@
 import { z } from "zod";
 
-export const studentStatus: string[] = ["Espera", "Matriculado", "Desligado"];
-export const mobilityTypes: string[] = ["Temporária", "Permanente"];
-export const studentClassifications: String[] = [
-    "", "Altas Habilidades(Superdotação)", "Cegueira",
+export const studentStatus = ["Espera", "Matriculado", "Desligado"];
+export const studentMobility = ["Temporária", "Permanente"];
+export const studentClassifications = [
+    "Nenhuma (sem deficiência ou condição específica)", "Altas Habilidades(Superdotação)", "Cegueira",
     "Deficiência Auditiva (leve ou moderada)", "Deficiência Auditiva (severa ou profunda)", "Deficiência Auditiva (processamento central)",
-    "Deficiência Física (cadeirante - permanente)", "Deficiência Física (parilisia cerebral)", "Deficiência Física (paraplegia ou monoplegia)", "Deficiência Física (outros)",
-    "Deficiência Intelectual", "Deficiência Mental", "Deficiência Visual (baixa visão)", "Disfemia (guagueira)",
+    "Deficiência Física (cadeirante - permanente)", "Deficiência Física (paralisia cerebral)", "Deficiência Física (paraplegia ou monoplegia)", "Deficiência Física (outros)",
+    "Deficiência Intelectual", "Deficiência Mental", "Deficiência Visual (baixa visão)", "Disfemia (gagueira)",
     "Sensorial Alta (sensibilidade)", "Sensorial Baixa (sensibilidade)",
     "Espectro Autista Nível 1", "Espectro Autista Nível 2", "Espectro Autista Nível 3",
     "Estrabismo", "Surdo", "Sindrome de Down",
     "TEA", "TDAH", "TOD",
 ]
-export const houseTypes: string[] = ["Própria", "Cedida", "Alugada"];
-export const floorTypes: string[] = ["Cimento", "Lajota", "Chão Batido"];
-export const buildingTypes: string[] = ["Tijolo", "Taipa", "Madeira", "Cobertura de Telha", "Cobertura de Zinco", "Cobertura de Palha"];
+export const studentHouses = ["Própria", "Cedida", "Alugada"];
+export const studentFloors = ["Cimento", "Lajota", "Chão Batido"];
+export const studentBuildings = ["Tijolo", "Taipa", "Madeira"]
+export const studentRoofs = ["Cobertura de Telha", "Cobertura de Zinco", "Cobertura de Palha"];
 
 export class StudentForm {
     id = -1;
     status = studentStatus[0];
     name = "";
     birthday: Date | null = null;
-    gender = "M";
+    gender = "";
     color = "";
     twins = false;
     has_brothers = false;
     guardians_ids: number[] = []
-    // sus
-    sus: Record<string, string> = {};
     //saúde e deficiências
+    sus: Record<string, string> = { "Número do Cartão SUS": "", "Unidade de Saúde": ""};
     health_issues = "";
     food_restriction = "";
     allergy = "";
-    mobility = mobilityTypes[0];
-    disabilities: string[] = [];
+    mobility = studentMobility[0];
+    disabilities = "";
     special_needs = "";
     classification = studentClassifications[0];
     //auxílios sociais
     gov_aid = "";
     nis_number = "";
     //
-    family: Record<string, string>[] = [
-        { name: "", kinship: "", age: "", education: "", profession: "", income: "" }
+    family: Record<string, string | number | Date>[] = [
+        { nome: "", parentesco: "", idade: 0, "educação": "", "profissão": "", "sálario": 0, date: new Date() }
     ];
     authorized: Record<string, string>[] = [
-        { name: "", kinship: "", rg: "", phone: "" }
+        { nome: "", parentesco: "", rg: "", telefone: "" }
     ];
     //endereço
     street = "";
@@ -66,12 +66,12 @@ export class StudentForm {
     rg_issue_date = "";
     rg_issuer = "";
     //casa
-    type = houseTypes[0];
+    type = studentHouses[0];
     rent_value = 0;
     rooms = 1;
-    floor_type = floorTypes[0];
-    building_type = buildingTypes[0];
-    roof_type = "";
+    floor_type = studentFloors[0];
+    building_type = studentBuildings[0];
+    roof_type = studentRoofs[0];
     sewer = true;
     septic_tank = true;
     electricity = true;
@@ -201,7 +201,6 @@ const loginSchema = z.object({
 
         return realAge <= 6;
     }, { message: "A criança deve ter no máximo 6 anos" }),
-    gender: z.enum(["M", "F"], "Tipo inválido"),
     guardian_id: z.int()
 });
 

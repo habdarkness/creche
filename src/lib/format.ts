@@ -1,7 +1,7 @@
-export function cleanObject<T extends Record<string, any>>(obj: T): Partial<T> {
+export function cleanObject(object: Record<string, any>): Record<string, any> {
     return Object.fromEntries(
-        Object.entries(obj).filter(([_, value]) => value != null && value != undefined)
-    ) as Partial<T>;
+        Object.entries(object).map(([k, v]) => [k, v === null ? "" : v])
+    );
 }
 export function capitalize(text: string, onlyLast: boolean = false) {
     const words = text.toLowerCase().split(" ");
