@@ -12,8 +12,8 @@ export async function GET(request: Request) {
     const id = searchParams.get("id");
 
     let guardian;
-    if (id) { guardian = await prisma.guardian.findUnique({ where: { id: Number(id) }, include: { students: true } }); }
-    else { guardian = await prisma.guardian.findMany({ include: { students: true } }); }
+    if (id) { guardian = await prisma.guardian.findUnique({ where: { id: Number(id) }, include: { dad_of: true, mom_of: true, guardian_of: true } }); }
+    else { guardian = await prisma.guardian.findMany({ include: { dad_of: true, mom_of: true, guardian_of: true } }); }
 
     return NextResponse.json(guardian);
 }
@@ -23,22 +23,17 @@ export async function POST(request: Request) {
     if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
 
     const data = await request.json();
-    const { id, name, email, phone } = data;
+    const { id, name, birthday, rg, cpf, kinship, phone, workplace, other_phone } = data;
     try {
-        let guardian;
-        if (id) {
-            const id_int = parseInt(id);
-            if (isNaN(id_int)) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
-            guardian = await prisma.guardian.update({
-                where: { id: id_int },
-                data: { name, email, phone },
-            });
+        const guardian = {
+            name, birthday, rg, cpf, kinship, phone, workplace, other_phone,
         }
-        else {
-            if (!name || !email || !phone) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
-            guardian = await prisma.guardian.create({ data: { name, email, phone } });
-        };
-        return NextResponse.json({ message: id ? "Responsável atualizado" : "Responsável criado", guardian });
+        const newGuardian = await prisma.guardian.upsert({
+            where: { id: id != undefined ? parseInt(id) : -1 },
+            create: guardian,
+            update: guardian,
+        });
+        return NextResponse.json({ message: id ? "Responsável atualizado" : "Responsável criado", guardian: newGuardian });
     }
     catch (error) { return NextResponse.json({ error: "Erro ao salvar Estudante" }, { status: 500 }); }
 }

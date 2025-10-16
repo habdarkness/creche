@@ -1,31 +1,32 @@
-import { cleanObject } from "@/lib/format";
-import { Guardian } from "@prisma/client";
 import { z } from "zod";
-
-export class GuardianForm {
+export const userTypes: Record<string, number> = {
+    "Administrador": 1,
+    "Secretário": 1,
+    "Professor": 2,
+}
+export class UserForm {
     id = -1;
     name = "";
-    cpf = "";
-    rg = "";
     email = "";
-    phone = ""
-    work_place = "";
+    phone = "";
+    token_password = "";
+    type = "Usuário";
+    send_token = true;
 
-    constructor(data: Partial<GuardianForm | Guardian> = {}) {
-        Object.assign(this, cleanObject(data));
+    constructor(data: Partial<UserForm> = {}) {
+        Object.assign(this, data);
     }
-
 
 
     getData() {
         return {
-            ...(this.id != -1 ? { id: this.id } : {}),
+            id: this.id == -1 ? undefined : this.id,
             name: this.name,
-            cpf: this.cpf,
-            rg: this.rg,
             email: this.email,
             phone: this.phone,
-            work_place: this.work_place
+            ...(this.send_token ? { token_password: this.token_password } : {}),
+            type: this.type,
+            level: this.type in userTypes ? userTypes[this.type] : undefined
         }
     }
     verify() {
@@ -39,7 +40,6 @@ export class GuardianForm {
 const loginSchema = z.object({
     name: z.string().min(1, "Nome inválido"),
     email: z.email("Email inválido"),
-    phone: z.string().min(8, "Telefone inválido"),
 });
 
 

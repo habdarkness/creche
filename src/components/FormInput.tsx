@@ -1,6 +1,6 @@
 "use client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import Switch from "./Switch";
 import { capitalize } from "@/lib/format";
@@ -13,7 +13,7 @@ type Props = {
     icon?: IconProp;
     type?: "text" | "textarea" | "password" | "date" | "number" | "time";
     options?: [number, string][] | string[];
-
+    search?: boolean;
     value: string | number | boolean | Record<string, any> | Record<string, any>[];
     editable?: boolean
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
@@ -23,11 +23,12 @@ type Props = {
 export default function FormInput({
     id, label = "", icon, fullWidth = false,
     placeholder = "Digite " + label.toLowerCase() + "...",
-    type = "text", options,
+    type = "text", options, search = false,
     value, onChange, editable = true
 }: Props) {
+    const [searchText, setSearchText] = useState("");
     const objectValue = useMemo(() => {
-        if (value && typeof value === "object") {return Array.isArray(value) ? value : [value];}
+        if (value && typeof value === "object") { return Array.isArray(value) ? value : [value]; }
         return [];
     }, [value]);
 
@@ -118,30 +119,48 @@ export default function FormInput({
                     <div className="flex gap-1 bg-primary-darker text-white rounded-md p-2 w-full items-center">
                         {icon && (<FontAwesomeIcon icon={icon} />)}
                         {options ? (
-                            <select
-                                id={id}
-                                name={id}
-                                value={
-                                    typeof value == "object" ? value.toString()
-                                        : typeof value === "boolean" ? String(value)
-                                            : value
-                                }
-                                onChange={onChange}
-                                className="w-full bg-transparent"
-                                disabled={!editable}
-                            >
-                                {options.map((opt) =>
-                                    Array.isArray(opt) ? (
-                                        <option key={opt[0]} value={opt[0]} className="text-primary-darker font-bold">
-                                            {opt[1]}
-                                        </option>
-                                    ) : (
-                                        <option key={opt} value={opt} className="text-primary-darker font-bold">
-                                            {opt}
-                                        </option>
-                                    )
+                            <div className={`grid ${search && "grid-cols-1 gap-2 md:grid-cols-[1fr_2fr]"} w-full`}>
+                                {search && (
+                                    <input
+                                        value={searchText}
+                                        placeholder="Pesquise..."
+                                        onChange={(e) => setSearchText(e.target.value)}
+                                        className="bg-white rounded-sm text-primary px-2 py-1"
+                                    />
                                 )}
-                            </select>
+                                <select
+                                    id={id}
+                                    name={id}
+                                    value={
+                                        typeof value == "object" ? value.toString()
+                                            : typeof value === "boolean" ? String(value)
+                                                : value
+                                    }
+                                    onChange={onChange}
+                                    className={`w-full ${search ? "bg-primary p-2 rounded-sm " : "bg-transparent"}`}
+                                    disabled={!editable}
+                                >
+                                    {options.map((opt) => {
+                                        if (Array.isArray(opt)) {
+                                            if (!opt[1].includes(searchText)) return;
+                                            return (
+                                                <option key={opt[0]} value={opt[0]} className="text-primary-darker font-bold">
+                                                    {opt[1]}
+                                                </option>
+                                            )
+                                        }
+                                        else {
+                                            if (!opt.includes(searchText)) return;
+                                            return (
+                                                <option key={opt} value={opt} className="text-primary-darker font-bold">
+                                                    {opt}
+                                                </option>
+                                            )
+
+                                        }
+                                    })}
+                                </select>
+                            </div>
                         ) : type == "textarea" ? (
                             <textarea
                                 id={id}

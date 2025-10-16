@@ -29,6 +29,7 @@ export default function Header() {
         const lastPath = pathname.split("/").pop();
         if (lastPath?.includes("usuarios")) { setTab("usuarios") }
         else if (lastPath?.includes("estudantes")) { setTab("estudantes") }
+        else if (lastPath?.includes("responsaveis")) { setTab("responsaveis") }
         //verificar o tamanho da tela
         const updateScreenSize = () => { setIsMobile(window.innerWidth < 768); };
         updateScreenSize();
@@ -41,7 +42,7 @@ export default function Header() {
         if (status == "authenticated" && pathname != "/") {
             if (session.user.temporary) { router.push("/") }
         }
-        else if (status == "unauthenticated" && pathname != "/estudantes") { router.push("estudantes") }
+        else if (status == "unauthenticated" && pathname != "/") { router.push("/") }
     }, [session, status, pathname]);
 
     function setTheme(light: boolean) {
@@ -64,7 +65,6 @@ export default function Header() {
         setTab(newTab);
         redirect(newTab);
     }
-    if (!session || window.location.pathname == "") return null;
     return (
         <header className="w-full bg-background p-2" onMouseLeave={() => setHovered(false)}>
             <div className="flex flex-row items-center gap-4 w-full">

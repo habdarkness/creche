@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Loader from "./Loader";
 import { capitalize } from "@/lib/format";
 import FormButton from "./FormButton";
+import FormButtonGroup from "./FormButtonGroup";
 
 type Props = {
     visible?: boolean;
@@ -72,7 +73,9 @@ export default function TabForm({ visible = true, tabs = [], tab = "", loading, 
                         {loading ? (<Loader />) : children}
                         <FontAwesomeIcon icon={faXmark} onClick={onCancel} className="absolute right-0 top-0 bg-red-400 text-white min-w-[24px] min-h-[24px] p-1 rounded-full self-center hover:bg-red-500 transition duration-200 ease cursor-pointer" />
                         {submit != "" && (
-                            <FormButton submit text={submit} icon={submitIcon} absolute />
+                            <FormButtonGroup>
+                                <FormButton submit text={submit} icon={submitIcon} />
+                            </FormButtonGroup>
                         )}
                     </div>
                     <div className="md:hidden">

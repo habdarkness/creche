@@ -21,26 +21,33 @@ model User {
 }
 
 model Guardian {
-    id         Int       @id @default(autoincrement())
-    name       String
-    cpf        String?
-    rg         String?
-    email      String?
-    phone      String?
-    work_place String?
-    students   Student[]
-    createdAt  DateTime  @default(now())
+    id          Int      @id @default(autoincrement())
+    name        String
+    birthday    DateTime
+    cpf         String   @unique
+    rg          String   @unique
+    kinship     String
+    phone       String
+    workplace   String
+    other_phone String
+
+    dad_of      Student[] @relation("dad_of")
+    mom_of      Student[] @relation("mom_of")
+    guardian_of Student[] @relation("guardian_of")
 }
 
 model Student {
     id           Int      @id @default(autoincrement())
-    status       String   @default("pré-matriculado")
+    status       String
     name         String
     birthday     DateTime
     gender       String
     color        String
     twins        Boolean  @default(false)
     has_brothers Boolean  @default(false)
+    //série
+    school_year  String?
+    school_grade String?
 
     // SUS
     sus Json
@@ -54,25 +61,30 @@ model Student {
     special_needs    String?
     classification   String?
 
-    //auxílios sociais
-    gov_aid    String?
-    nis_number String?
-
     //família
-    family Json? //{name, age, kinship, schooling, occupation, income_value} calculaveis (renda familiar, renda per capita)
+    dad_id Int?      @unique
+    dad    Guardian? @relation("dad_of", fields: [dad_id], references: [id])
 
-    //série
-    school_year  String?
-    school_grade String?
+    mom_id Int?      @unique
+    mom    Guardian? @relation("mom_of", fields: [mom_id], references: [id])
 
-    //pessoas autorizadas
-    authorized Json? //name, kinship, rg, phone
+    guardian_id Int?      @unique
+    guardian    Guardian? @relation("guardian_of", fields: [guardian_id], references: [id])
 
-    address   Address?
-    document  Documents?
-    housing   Housing?
-    asset     Assets?
-    guardians Guardian[]
+    family     Json?
+    authorized Json?
+
+    // gov_aid    String?
+    // nis_number String?
+
+    //dad        Json?
+    //mom        Json?
+    //guardian   Json?
+
+    address  Address?
+    document Documents?
+    housing  Housing?
+    asset    Assets?
 
     createdAt DateTime @default(now())
 }

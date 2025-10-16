@@ -1,7 +1,9 @@
+import { formatPhone, formatRG } from "@/lib/format";
+import { format } from "path";
 import { z } from "zod";
 
 export const studentStatus = ["Espera", "Matriculado", "Desligado"];
-export const studentMobility = ["Temporária", "Permanente"];
+export const studentMobility = ["Nenhuma", "Temporária", "Permanente"];
 export const studentClassifications = [
     "Nenhuma (sem deficiência ou condição específica)", "Altas Habilidades(Superdotação)", "Cegueira",
     "Deficiência Auditiva (leve ou moderada)", "Deficiência Auditiva (severa ou profunda)", "Deficiência Auditiva (processamento central)",
@@ -16,6 +18,7 @@ export const studentHouses = ["Própria", "Cedida", "Alugada"];
 export const studentFloors = ["Cimento", "Lajota", "Chão Batido"];
 export const studentBuildings = ["Tijolo", "Taipa", "Madeira"]
 export const studentRoofs = ["Cobertura de Telha", "Cobertura de Zinco", "Cobertura de Palha"];
+export const studentColor = ["Não declarada", "Branca", "Preta", "Parda", "Amarela", "Indigena"];
 
 export class StudentForm {
     id = -1;
@@ -23,12 +26,11 @@ export class StudentForm {
     name = "";
     birthday: Date | null = null;
     gender = "";
-    color = "";
+    color = studentColor[0];
     twins = false;
     has_brothers = false;
-    guardians_ids: number[] = []
     //saúde e deficiências
-    sus: Record<string, string> = { "Número do Cartão SUS": "", "Unidade de Saúde": ""};
+    sus: Record<string, string> = { "Número do Cartão SUS": "", "Unidade de Saúde": "" };
     health_issues = "";
     food_restriction = "";
     allergy = "";
@@ -40,11 +42,14 @@ export class StudentForm {
     gov_aid = "";
     nis_number = "";
     //
+    dad_id = -1;
+    mom_id = -1;
+    guardian_id = -1;
     family: Record<string, string | number | Date>[] = [
-        { nome: "", parentesco: "", idade: 0, "educação": "", "profissão": "", "sálario": 0, date: new Date() }
+        { nome: "", parentesco: "", idade: 0, "educação": "", "profissão": "", "sálario": 0 }
     ];
     authorized: Record<string, string>[] = [
-        { nome: "", parentesco: "", rg: "", telefone: "" }
+        { nome: "", parentesco: "", rg: "", contato: "" }
     ];
     //endereço
     street = "";
@@ -97,7 +102,18 @@ export class StudentForm {
     motorcycle = false;
     car = false;
 
-    constructor(data: Partial<StudentForm> = {}) { Object.assign(this, data); }
+    constructor(data: Partial<StudentForm> = {}) {
+        data.phone_home = formatPhone(data.phone_home ?? "");
+        data.phone_alt = formatPhone(data.phone_alt ?? "");
+        if (Array.isArray(data.authorized)) {
+            data.authorized = data.authorized.map(auth => ({
+                ...auth,
+                rg: typeof auth.rg === "string" ? formatRG(auth.rg) : auth.rg,
+                contato: typeof auth.contato === "string" ? formatPhone(auth.contato) : auth.contato,
+            }));
+        }
+        Object.assign(this, data);
+    }
 
     getData() {
         return {
@@ -105,7 +121,7 @@ export class StudentForm {
                 ...(this.id != -1 ? { id: this.id } : {}),
                 status: this.status,
                 name: this.name,
-                birthday: this.birthday,
+                birthday: this.birthday ? new Date(this.birthday) : null,
                 gender: this.gender,
                 color: this.color,
                 twins: this.twins,
@@ -118,11 +134,14 @@ export class StudentForm {
                 disabilities: this.disabilities,
                 special_needs: this.special_needs,
                 classification: this.classification,
-                gov_aid: this.gov_aid,
-                nis_number: this.nis_number,
+                // gov_aid: this.gov_aid,
+                // nis_number: this.nis_number,
+
+                ...(this.dad_id != -1 ? { dad_id: this.id } : {}),
+                ...(this.mom_id != -1 ? { mom_id: this.mom_id } : {}),
+                ...(this.guardian_id != -1 ? { guardian_id: this.guardian_id } : {}),
                 family: this.family,
                 authorized: this.authorized,
-                guardians_ids: this.guardians_ids
             },
             address: {
                 street: this.street,
@@ -181,27 +200,29 @@ export class StudentForm {
         }
     }
     verify() {
-        const result = loginSchema.safeParse(this.getData());
+        const result = schema.safeParse(this.getData());
+        console.log(this.getData());
         if (!result.success) {
-            return result.error.issues.map(e => e.message).join("\n");
+            return result.error.issues.map(i => i.message).join("<br>");
         }
         return "";
     }
 }
-const loginSchema = z.object({
-    name: z.string().min(1, "Nome inválido"),
-    birthday: z.date().refine((date) => {
-        const today = new Date();
-        const age = today.getFullYear() - date.getFullYear();
-        const hasBirthdayPassed =
-            today.getMonth() > date.getMonth() ||
-            (today.getMonth() === date.getMonth() &&
-                today.getDate() >= date.getDate());
-        const realAge = hasBirthdayPassed ? age : age - 1;
+const schema = z.object({
+    student: z.object({
+        name: z.string("Nome é obrigatório").min(1, "Nome inválido"),
+        birthday: z.date("Data de nascimento é obrigatório").refine((date) => {
+            const today = new Date();
+            const age = today.getFullYear() - date.getFullYear();
+            const hasBirthdayPassed =
+                today.getMonth() > date.getMonth() ||
+                (today.getMonth() === date.getMonth() &&
+                    today.getDate() >= date.getDate());
+            const realAge = hasBirthdayPassed ? age : age - 1;
 
-        return realAge <= 6;
-    }, { message: "A criança deve ter no máximo 6 anos" }),
-    guardian_id: z.int()
+            return realAge <= 8;
+        }, { message: "A criança deve ter no máximo 8 anos" }),
+    })
 });
 
 
