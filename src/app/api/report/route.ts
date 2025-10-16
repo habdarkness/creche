@@ -10,7 +10,7 @@ export async function GET() {
     const session = await VerifyUser();
     if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
-    const students = await prisma.student.findMany({ include: { guardian: true } });
+    const students = await prisma.student.findMany({ include: { address: true, document: true, housing: true, asset: true } });
 
     // Gerar CSV usando a lib
     const csv = generateCSV(
@@ -22,7 +22,6 @@ export async function GET() {
             new Date(s.birthday).toDateString(),
             new Date().getFullYear() - new Date(s.birthday).getFullYear(),
             s.gender,
-            s.guardian.name
         ]
     );
 

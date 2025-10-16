@@ -6,17 +6,16 @@ type Props = {
     submit?: boolean
     text?: string;
     icon?: IconProp;
-    absolute?: boolean;
     onClick?: () => void;
     color?: string;
     loading?: boolean;
 };
 
-export default function FormButton({ submit, text = "", icon, absolute, color = "bg-primary", loading, onClick }: Props) {
+export default function FormButton({ submit, text = "", icon, color = "bg-primary", loading, onClick }: Props) {
     return (
         <button
             type={submit ? "submit" : "button"}
-            className={`flex gap-2 items-center text-white rounded-lg p-2 transition cursor-pointer ${absolute && "absolute right-[50%] bottom-5 translate-x-1/2"} ${color} hover:scale-105`}
+            className={`flex gap-2 items-center text-white rounded-lg p-2 transition cursor-pointer ${color} hover:scale-105`}
             onClick={onClick}
         >
             {text}

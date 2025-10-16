@@ -2,11 +2,12 @@
 
 import { useSearch } from "@/components/Contexts";
 import FormButton from "@/components/FormButton";
+import FormButtonGroup from "@/components/FormButtonGroup";
 import FormInput from "@/components/FormInput";
 import Loader from "@/components/Loader";
 import PageButton from "@/components/PageButton";
 import TabForm from "@/components/TabForm";
-import { capitalize } from "@/lib/capitalize";
+import { capitalize } from "@/lib/format";
 import { generateToken } from "@/lib/generateToken";
 import { UserForm, userTypes } from "@/models/UserForm";
 import { faArrowUp19, faBriefcase, faEnvelope, faKey, faUser, faUserTie } from "@fortawesome/free-solid-svg-icons";
@@ -40,7 +41,7 @@ export default function Users() {
     function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { id, value } = event.target;
         setForm(prev => new UserForm({
-            ...prev, [id]: id === "level" ? Number(value) : id == "guardian" ? value == "true" : value
+            ...prev, [id]: id === "level" ? Number(value) : value
         }));
     }
     async function handleSubmit(event: React.FormEvent) {
@@ -122,12 +123,12 @@ export default function Users() {
                     onChange={handleChange}
                     fullWidth
                 />
-                <div className="flex gap-2 items-center absolute right-[50%] bottom-5 translate-x-1/2">
+                <FormButtonGroup>
                     <FormButton submit text={form.id == -1 ? "Cadastrar" : "Atualizar"} />
                     {form.id != -1 && (
                         <FormButton text={form.send_token ? `Senha: ${form.token_password}` : "Resetar senha"} color="bg-red-400" icon={faKey} onClick={() => setForm(prev => new UserForm({ ...prev, token_password: generateToken(), send_token: true }))} />
                     )}
-                </div>
+                </FormButtonGroup>
             </TabForm>
             <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new UserForm()); setFormVisible(true); }} />
         </div>

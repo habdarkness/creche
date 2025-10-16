@@ -4,22 +4,23 @@ import FormInput from "@/components/FormInput";
 import Loader from "@/components/Loader";
 import PageButton from "@/components/PageButton";
 import TabForm from "@/components/TabForm";
-import { capitalize } from "@/lib/capitalize";
-import { StudentWithRelations } from "@/types/prismaTypes";
+import { capitalize, cleanObject } from "@/lib/format";
+import { GuardianWithRelations, StudentWithRelations } from "@/types/prismaTypes";
 import { faCakeCandles, faUser, faVenusMars } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { StudentForm } from "../../models/StudentForm";
-import { Guardian } from "@prisma/client";
+import { studentBuildings, studentClassifications, studentFloors, StudentForm, studentHouses, studentMobility, studentRoofs, studentStatus } from "../../models/StudentForm";
 import { prismaDate } from "@/lib/prismaLib";
+import StudentTabForm from "@/components/StudentTabForm";
+import { useSearch } from "@/components/Contexts";
 
 export default function Students() {
+    const { search } = useSearch();
     const [students, setStudents] = useState<StudentWithRelations[]>([]);
-    const [guardians, setGuardians] = useState<Guardian[]>([]);
     const [loading, setLoading] = useState(true);
     const [formVisible, setFormVisible] = useState(false);
     const [form, setForm] = useState<StudentForm>(new StudentForm());
-
+    const [guardians, setGuardians] = useState<GuardianWithRelations[]>([]);
 
     useEffect(() => {
         async function fetchStudents() {
@@ -55,7 +56,7 @@ export default function Students() {
         const message = form.verify()
         if (message) return Swal.fire({
             title: "Erro de validação",
-            text: message,
+            html: message,
             icon: "error"
         });
         try {
@@ -94,13 +95,18 @@ export default function Students() {
         }
     }
     if (loading) return (<div className="flex items-center justify-center h-full"><Loader /></div>)
+    const filtered = students.filter(student => {
+        const term = search.toLowerCase();
+        const userTerm = (student.name).toLowerCase();
+        return userTerm.includes(term);
+    })
     return (
         <div className="flex flex-col m-4 h-full">
             <h1 className="text-2xl font-bold mb-4">Estudantes</h1>
             <ul className=" grid grid-cols-4 w-full gap-4">
                 {students.map(student => (
                     <li key={student.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
-                        setForm(new StudentForm({ ...student }));
+                        setForm(new StudentForm(cleanObject(student)));
                         setFormVisible(true);
                     }}>
                         <p className="font-bold text-lg">{capitalize(student.name)}</p>
@@ -116,23 +122,12 @@ export default function Students() {
                                 return `${age} anos`;
                             })()}
                         </p>
-                        <p className="text-sm">{capitalize(student.guardian.name)}</p>
                     </li>
                 ))}
             </ul>
-            <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit} submit={form.id == -1 ? "Cadastrar" : "Atualizar"}>
-                <FormInput id="name" label="Nome" icon={faUser} value={form.name} onChange={handleChange} />
-                <FormInput
-                    id="birthday"
-                    type="date"
-                    label="Aniversário"
-                    icon={faCakeCandles}
-                    value={form.birthday ? prismaDate(form.birthday).toISOString().substring(0, 10) : ""}
-                    onChange={handleChange}
-                />
-                <FormInput id="gender" options={["M", "F"]} label="Genero" icon={faVenusMars} value={form.gender} onChange={handleChange} />
-                <FormInput id="guardian_id" options={[[-1, "Selecione um responsavel"], ...guardians.map((guardian): [number, string] => [guardian.id, guardian.name])]} label="Responsável" value={form.guardian_id} onChange={handleChange} />
-            </TabForm>
+
+            <StudentTabForm form={form} onChange={handleChange} visible={formVisible} onVisibilityChanged={setFormVisible} onSubmit={handleSubmit} guardians={guardians} />
+
             <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new StudentForm()); setFormVisible(true) }} />
         </div>
     );

@@ -14,6 +14,7 @@ export default function Home() {
     const { setTab } = useTab();
     const [form, setForm] = useState({ email: "", pass: "", new_pass: "", confirm_pass: "" });
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (status == "authenticated" && !session.user.temporary) {
@@ -34,6 +35,8 @@ export default function Home() {
         if (session?.user.temporary) {
             if (form.new_pass != form.confirm_pass) { return setError("Senhas diferents") }
             if (form.new_pass.length < 6) { return setError("Senha inválida") }
+
+            setLoading(true);
             try {
                 const res = await fetch("/api/user", {
                     method: "POST",
@@ -59,12 +62,17 @@ export default function Home() {
             }
         }
         else {
+            setLoading(true);
             const res = await signIn("credentials", {
                 redirect: false,
                 email: form.email,
                 password: form.pass
             });
+            if (!res?.ok) {
+                setError("Erro ao Logar")
+            }
         }
+        setLoading(false);
     }
 
     return (
@@ -97,9 +105,9 @@ export default function Home() {
                         {error && <p className="text-red-400 text-sm">{error}</p>}
                         <button
                             type="submit"
-                            className="bg-primary text-lg px-2 py-1 rounded-full hover:scale-105 transition"
+                            className="flex items-center gap-2 bg-primary text-lg px-2 py-1 rounded-full hover:scale-105 transition"
                         >
-                            Entrar
+                            Entrar {loading && (<Loader className="size-6" />)}
                         </button>
                     </>
                 ) : session?.user.temporary && (
@@ -112,7 +120,6 @@ export default function Home() {
                             value={form.new_pass}
                             onChange={handleChange}
                         />
-                        {error && <p className="text-red-400 text-sm">{error}</p>}
                         <input
                             id="confirm_pass"
                             type="password"
@@ -121,11 +128,12 @@ export default function Home() {
                             value={form.confirm_pass}
                             onChange={handleChange}
                         />
+                        {error && <p className="text-red-400 text-sm">{error}</p>}
                         <button
                             type="submit"
-                            className="bg-primary text-lg px-2 py-1 rounded-full hover:scale-105 transition"
+                            className="flex items-center gap-2 bg-primary text-lg px-2 py-1 rounded-full hover:scale-105 transition"
                         >
-                            Criar senha
+                            Criar senha {loading && (<Loader className="size-6" />)}
                         </button>
                     </>
                 )

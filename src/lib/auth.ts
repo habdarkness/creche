@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { getServerSession, NextAuthOptions } from "next-auth";
-import { use } from "react";
 
 const prisma = new PrismaClient();
 
@@ -25,10 +24,6 @@ export const authOptions: NextAuthOptions = {
                 const isValid = await bcrypt.compare(credentials.password, user.password);
                 if (!isValid) return null;
                 const isTemporary = user.password == user.token_password;
-                console.log("------------------------")
-                console.log(isTemporary)
-                console.log(user.token_password)
-                console.log(user.password)
                 return {
                     id: user.id.toString(),
                     name: user.name,
@@ -40,7 +35,13 @@ export const authOptions: NextAuthOptions = {
             },
         }),
     ],
-    session: { strategy: "jwt" },
+    session: {
+        strategy: "jwt",
+        maxAge: 60 * 60 * 24,
+    },
+    jwt: {
+        maxAge: 60 * 60 * 24,
+    },
     pages: { signIn: "/login" },
     secret: process.env.NEXTAUTH_SECRET,
     callbacks: {

@@ -15,11 +15,9 @@ export async function GET(request: Request) {
 
     let users;
     if (id) {
-        users = await prisma.user.findUnique({
-            where: { id: Number(id) }
-        });
-    }
-    else {
+        const user = await prisma.user.findUnique({ where: { id: Number(id) } });
+        users = user ? [user] : [];
+    } else {
         users = await prisma.user.findMany({
             where: { level: { gte: session.level } },
             orderBy: { name: "asc" }
@@ -27,6 +25,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json(users);
+
 }
 
 export async function POST(request: Request) {

@@ -2,15 +2,16 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faChevronLeft, faChevronRight, faFloppyDisk, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Loader from "./Loader";
-import { capitalize } from "@/lib/capitalize";
+import { capitalize } from "@/lib/format";
 import FormButton from "./FormButton";
+import FormButtonGroup from "./FormButtonGroup";
 
 type Props = {
     visible?: boolean;
     tabs?: string[];
     tab?: string;
     rows?: number;
-    onChangeTab?: (tab: string) => void;
+    onTabChanged?: (tab: string) => void;
     onSubmit?: (e: React.FormEvent) => void;
     onCancel?: () => void;
     submit?: string;
@@ -19,7 +20,7 @@ type Props = {
     loading?: boolean;
 }
 
-export default function TabForm({ visible = true, tabs = [], tab = "", loading, submit = "", submitIcon = faFloppyDisk, rows = 2, onChangeTab, onSubmit, onCancel, children }: Props) {
+export default function TabForm({ visible = true, tabs = [], tab = "", loading, submit = "", submitIcon = faFloppyDisk, rows = 2, onTabChanged, onSubmit, onCancel, children }: Props) {
     const row_size = Math.ceil(tabs.length / rows);
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -57,7 +58,7 @@ export default function TabForm({ visible = true, tabs = [], tab = "", loading, 
                                                         : "text-background bg-primary hidden"
                                                 }`
                                             }
-                                            onClick={() => onChangeTab && onChangeTab(t)}
+                                            onClick={() => onTabChanged && onTabChanged(t)}
                                         >
                                             {capitalize(t)}
                                         </button>
@@ -72,7 +73,9 @@ export default function TabForm({ visible = true, tabs = [], tab = "", loading, 
                         {loading ? (<Loader />) : children}
                         <FontAwesomeIcon icon={faXmark} onClick={onCancel} className="absolute right-0 top-0 bg-red-400 text-white min-w-[24px] min-h-[24px] p-1 rounded-full self-center hover:bg-red-500 transition duration-200 ease cursor-pointer" />
                         {submit != "" && (
-                            <FormButton submit text={submit} icon={submitIcon} absolute />
+                            <FormButtonGroup>
+                                <FormButton submit text={submit} icon={submitIcon} />
+                            </FormButtonGroup>
                         )}
                     </div>
                     <div className="md:hidden">
@@ -82,7 +85,7 @@ export default function TabForm({ visible = true, tabs = [], tab = "", loading, 
                                 icon={faChevronLeft}
                                 onClick={() => {
                                     const currentIndex = tabs.findIndex(t => t === tab);
-                                    onChangeTab && onChangeTab(tabs[currentIndex - 1]);
+                                    onTabChanged && onTabChanged(tabs[currentIndex - 1]);
                                 }}
                             />
                         )}
@@ -93,7 +96,7 @@ export default function TabForm({ visible = true, tabs = [], tab = "", loading, 
                                 icon={faChevronRight}
                                 onClick={() => {
                                     const currentIndex = tabs.findIndex(t => t === tab);
-                                    onChangeTab && onChangeTab(tabs[currentIndex + 1]);
+                                    onTabChanged && onTabChanged(tabs[currentIndex + 1]);
                                 }}
                             />
                         )}
