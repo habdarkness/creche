@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #f3be00;
-  --primary-darker: #e28000;
+  --primary: #00aa2a
+    /* #f3be00; */
+  ;
+  --primary-darker: #008100
+    /* #e28000 */
+  ;
   --background: #242738;
   --background-darker: #171219;
   --foreground: white;
@@ -28,4 +32,17 @@ body {
 
 input:focus {
   outline: none;
+}
+
+.swal2-popup {
+  background-color: var(--color-background);
+  color: var(--color-foreground)
+}
+
+.swal2-popup button {
+  background-color: var(--color-primary);
+}
+
+.swal2-popup button:hover {
+  background-color: var(--color-primary-darker);
 }

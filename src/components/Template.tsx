@@ -1,16 +1,15 @@
 "use client";
-import { useSession, SessionProvider } from "next-auth/react";
+import { SessionProvider } from "next-auth/react";
 import { Contexts } from "./Contexts";
 import Header from "./Header";
-import { useEffect } from "react";
 
 export default function Template({ children }: { children: React.ReactNode }) {
     return (
         <SessionProvider>
             <Contexts>
-                <div className={`overflow-y-auto h-full`}>
+                <div className={`grid grid-rows-[min-content_1fr] h-screen`}>
                     <Header />
-                    <div className="flex flex-col h-screen">
+                    <div className="flex flex-col h-full overflow-y-auto">
                         {children}
                     </div>
                 </div>
