@@ -21,48 +21,92 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     const session = await VerifyUser();
-    if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
+    if (!session) {
+        return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
 
     const data = await request.json();
     const { student, address, documents, housing, assets } = data;
+    let id = "id" in student ? student.id : undefined;
+
     try {
-        let id = "id" in student ? student.id : undefined;
-        if (id != undefined && isNaN(id)) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
-        let newStudent: Student
-        if (id == undefined) {
-            newStudent = await prisma.student.create({
-                data: student,
+        const result = await prisma.$transaction(async (tx) => {
+            let newStudent;
+
+            // Cria ou atualiza o estudante
+            if (id == undefined) {
+                newStudent = await tx.student.create({ data: student });
+                id = newStudent.id;
+            } else {
+                newStudent = await tx.student.update({
+                    where: { id: parseInt(id) },
+                    data: student,
+                });
+            }
+
+            // Função utilitária para limpar valores vazios ("" → null)
+            const clean = (obj: any) =>
+                Object.fromEntries(
+                    Object.entries(obj ?? {}).map(([key, value]) => [
+                        key,
+                        value === "" ? null : value,
+                    ])
+                );
+
+            const addressData = clean(address);
+            const documentsData = clean(documents);
+            const housingData = clean(housing);
+            const assetsData = clean(assets);
+
+            // Upserts dentro da transação
+            const newAddress = await tx.address.upsert({
+                where: { student_id: id },
+                create: { ...addressData, student_id: id },
+                update: addressData,
             });
-        }
-        else {
-            newStudent = await prisma.student.update({
-                where: { id: parseInt(id) },
-                data: student,
+
+            const newDocuments = await tx.documents.upsert({
+                where: { student_id: id },
+                create: { ...documentsData, student_id: id },
+                update: documentsData,
             });
-        }
-        id = newStudent.id;
-        const newAddress = await prisma.address.upsert({
-            where: { student_id: id },
-            create: address,
-            update: address
+
+            const newHousing = await tx.housing.upsert({
+                where: { student_id: id },
+                create: { ...housingData, student_id: id },
+                update: housingData,
+            });
+
+            const newAssets = await tx.assets.upsert({
+                where: { student_id: id },
+                create: { ...assetsData, student_id: id },
+                update: assetsData,
+            });
+
+            return {
+                newStudent,
+                newAddress,
+                newDocuments,
+                newHousing,
+                newAssets,
+            };
         });
-        const newDocuments = await prisma.documents.upsert({
-            where: { student_id: id },
-            create: documents,
-            update: documents
+
+        return NextResponse.json({
+            message: id ? "Estudante atualizado" : "Estudante criado",
+            student: {
+                ...result.newStudent,
+                address: result.newAddress,
+                documents: result.newDocuments,
+                housing: result.newHousing,
+                assets: result.newAssets,
+            },
         });
-        const newHousing = await prisma.housing.upsert({
-            where: { student_id: id },
-            create: housing,
-            update: housing
-        });
-        const newAssets = await prisma.assets.upsert({
-            where: { student_id: id },
-            create: assets,
-            update: assets
-        });
-        const studentWithRelationships = { ...newStudent, address: newAddress, documents: newDocuments, housing: newHousing, assets: newAssets }
-        return NextResponse.json({ message: id ? "Estudante atualizado" : "Estudante criado", student: studentWithRelationships });
+    } catch (error) {
+        console.error("Erro ao salvar Estudante:", error);
+        return NextResponse.json(
+            { error: "Erro ao salvar Estudante: " + String(error) },
+            { status: 500 }
+        );
     }
-    catch (error) { return NextResponse.json({ error: "Erro ao salvar Estudante: " + String(error) }, { status: 500 }); }
 }

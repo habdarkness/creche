@@ -68,7 +68,7 @@ export class StudentForm {
     registry_office = "";
     cpf = "";
     rg = "";
-    rg_issue_date = "";
+    rg_issue_date: Date | null = null;
     rg_issuer = "";
     //casa
     type = studentHouses[0];
@@ -134,8 +134,8 @@ export class StudentForm {
                 disabilities: this.disabilities,
                 special_needs: this.special_needs,
                 classification: this.classification,
-                // gov_aid: this.gov_aid,
-                // nis_number: this.nis_number,
+                gov_aid: this.gov_aid,
+                nis_number: this.nis_number,
 
                 ...(this.dad_id != -1 ? { dad_id: this.id } : {}),
                 ...(this.mom_id != -1 ? { mom_id: this.mom_id } : {}),
@@ -161,7 +161,7 @@ export class StudentForm {
                 registry_office: this.registry_office,
                 cpf: this.cpf,
                 rg: this.rg,
-                rg_issue_date: this.rg_issue_date,
+                rg_issue_date: this.rg_issue_date ? new Date(this.rg_issue_date) : null,
                 rg_issuer: this.rg_issuer
             },
             housing: {

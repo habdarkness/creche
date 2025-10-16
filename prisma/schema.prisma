@@ -74,12 +74,8 @@ model Student {
     family     Json?
     authorized Json?
 
-    // gov_aid    String?
-    // nis_number String?
-
-    //dad        Json?
-    //mom        Json?
-    //guardian   Json?
+    gov_aid    String?
+    nis_number String?
 
     address  Address?
     document Documents?
@@ -120,7 +116,7 @@ model Documents {
 
 model Housing {
     id            Int      @id @default(autoincrement())
-    type          String? //própria, cedida, alugada
+    type          String?
     rent_value    Float?
     rooms         Int?
     floor_type    String?
@@ -158,25 +154,3 @@ model Assets {
     student_id      Int?     @unique
     student         Student? @relation(fields: [student_id], references: [id])
 }
-
-// model FamilyMember {
-//     id           Int     @id @default(autoincrement())
-//     name         String
-//     age          Int?
-//     kinship      String?
-//     schooling    String?
-//     occupation   String?
-//     income_value Float?
-//     student_id   Int
-//     student      Student @relation(fields: [student_id], references: [id])
-// }
-
-// model AuthorizedPerson {
-//     id         Int     @id @default(autoincrement())
-//     name       String
-//     kinship    String?
-//     rg         String?
-//     phone      String?
-//     student_id Int
-//     student    Student @relation(fields: [student_id], references: [id])
-// }
