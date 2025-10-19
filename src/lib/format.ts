@@ -3,6 +3,11 @@ export function cleanObject(object: Record<string, any>): Record<string, any> {
         Object.entries(object).map(([k, v]) => [k, v === null ? "" : v])
     );
 }
+export function parseID(id: string, value?: number) {
+    if (value == -1) return {};
+    return { [id]: value };
+}
+
 export function capitalize(text: string, onlyLast: boolean = false) {
     const words = text.toLowerCase().split(" ");
     if (onlyLast && words.length > 1) {

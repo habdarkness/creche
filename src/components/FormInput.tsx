@@ -140,19 +140,24 @@ export default function FormInput({
                                     className={`w-full ${search ? "bg-primary p-2 rounded-sm " : "bg-transparent"}`}
                                     disabled={!editable}
                                 >
+                                    {options.length > 0 && Array.isArray(options[0]) ? (
+                                        <option value={-1} className="text-primary bg-primary-darker font-bold">Selecione uma opção</option>
+                                    ) : (
+                                        <option value={`Selecione uma opção`} className="text-primary bg-primary-darker font-bold">Selecione uma opção</option>
+                                    )}
                                     {options.map((opt) => {
                                         if (Array.isArray(opt)) {
-                                            if (!opt[1].includes(searchText)) return;
+                                            if (!opt[1].includes(searchText) && opt[0] != value) return;
                                             return (
-                                                <option key={opt[0]} value={opt[0]} className="text-primary-darker font-bold">
+                                                <option key={opt[0]} value={opt[0]} className="text-primary bg-primary-darker font-bold">
                                                     {opt[1]}
                                                 </option>
                                             )
                                         }
                                         else {
-                                            if (!opt.includes(searchText)) return;
+                                            if (!opt.includes(searchText) && opt != value) return;
                                             return (
-                                                <option key={opt} value={opt} className="text-primary-darker font-bold">
+                                                <option key={opt} value={opt} className="text-primary bg-primary-darker font-bold">
                                                     {opt}
                                                 </option>
                                             )

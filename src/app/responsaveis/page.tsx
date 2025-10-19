@@ -184,9 +184,10 @@ export default function Guardians() {
                 <FormInput id="phone" label="Telefone" icon={faUser} value={form.phone} onChange={handleChange} />
                 <FormInput id="workplace" label="Local de Trabalho" icon={faUser} value={form.workplace} onChange={handleChange} />
                 <FormInput id="other_phone" label="Outro Telefone" icon={faUser} value={form.other_phone} onChange={handleChange} />
-                <div className="bg-background-darker">
+                <div className="bg-background-darker p-2 rounded-3xl">
+                    <p className="text-center text-primary font-bold mb-2">Estudantes vinculados</p>
                     {form.getStudents().map(student => (
-                        <li key={student.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
+                        <li key={student.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:bg-primary transition" onClick={() => {
                             setStudentForm(new StudentForm(cleanObject(student)));
                             setStudentFormVisible(true);
                         }}>
@@ -207,7 +208,7 @@ export default function Guardians() {
                     ))}
                 </div>
             </TabForm>
-            <StudentTabForm form={studentForm} onChange={handleStudentChange} onSubmit={handleStudentSubmit} visible={studentFormVisible} onVisibilityChanged={setStudentFormVisible} />
+            <StudentTabForm form={studentForm} onChange={handleStudentChange} onSubmit={handleStudentSubmit} visible={studentFormVisible} onVisibilityChanged={setStudentFormVisible} guardians={guardians} />
             <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new GuardianForm()); setFormVisible(true); }} />
         </div>
     );

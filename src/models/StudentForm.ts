@@ -1,4 +1,4 @@
-import { formatPhone, formatRG } from "@/lib/format";
+import { formatPhone, formatRG, parseID } from "@/lib/format";
 import { format } from "path";
 import { z } from "zod";
 
@@ -103,22 +103,25 @@ export class StudentForm {
     car = false;
 
     constructor(data: Partial<StudentForm> = {}) {
-        data.phone_home = formatPhone(data.phone_home ?? "");
-        data.phone_alt = formatPhone(data.phone_alt ?? "");
+        Object.assign(this, data);
+        this.dad_id = Number(data.dad_id);
+        this.mom_id = Number(data.mom_id);
+        this.guardian_id = Number(data.guardian_id);
+        this.phone_home = formatPhone(data.phone_home ?? "");
+        this.phone_alt = formatPhone(data.phone_alt ?? "");
         if (Array.isArray(data.authorized)) {
-            data.authorized = data.authorized.map(auth => ({
+            this.authorized = data.authorized.map(auth => ({
                 ...auth,
                 rg: typeof auth.rg === "string" ? formatRG(auth.rg) : auth.rg,
                 contato: typeof auth.contato === "string" ? formatPhone(auth.contato) : auth.contato,
             }));
         }
-        Object.assign(this, data);
     }
 
     getData() {
         return {
             student: {
-                ...(this.id != -1 ? { id: this.id } : {}),
+                ...parseID("id", this.id),
                 status: this.status,
                 name: this.name,
                 birthday: this.birthday ? new Date(this.birthday) : null,
@@ -137,9 +140,9 @@ export class StudentForm {
                 gov_aid: this.gov_aid,
                 nis_number: this.nis_number,
 
-                ...(this.dad_id != -1 ? { dad_id: this.id } : {}),
-                ...(this.mom_id != -1 ? { mom_id: this.mom_id } : {}),
-                ...(this.guardian_id != -1 ? { guardian_id: this.guardian_id } : {}),
+                ...parseID("dad_id", this.dad_id),
+                ...parseID("mom_id", this.mom_id),
+                ...parseID("guardian_id", this.guardian_id),
                 family: this.family,
                 authorized: this.authorized,
             },

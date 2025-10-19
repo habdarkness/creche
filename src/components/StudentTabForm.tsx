@@ -165,7 +165,7 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
                     <FormInput id="cpf" label="CPF" icon={faUser} value={form.cpf} onChange={onChange} />
                     <div className={divStyle}>
                         <FormInput id="rg" label="RG" icon={faUser} value={form.rg} onChange={onChange} />
-                        <FormInput id="rg_issue_date" label="Data de Emissão" type="date" icon={faUser} value={form.rg_issue_date} onChange={onChange} />
+                        <FormInput id="rg_issue_date" label="Data de Emissão" type="date" icon={faUser} value={form.rg_issue_date ? prismaDate(form.rg_issue_date).toISOString().substring(0, 10) : ""} onChange={onChange} />
                         <FormInput id="rg_issuer" label="Orgão Emissor" icon={faUser} value={form.rg_issuer} onChange={onChange} />
                     </div>
                 </>
