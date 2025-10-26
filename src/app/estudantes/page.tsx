@@ -104,13 +104,13 @@ export default function Students() {
         <div className="flex flex-col m-4 h-full">
             <h1 className="text-2xl font-bold mb-4">Estudantes</h1>
             <ul className=" grid grid-cols-4 w-full gap-4">
-                {students.map(student => (
-                    <li key={student.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
+                {filtered.map(student => (
+                    <li key={student.id} className={`flex flex-col  bg-primary-darker p-2 rounded-2xl hover:bg-primary transition ${student.status != "Matriculado" && "opacity-75"}`} onClick={() => {
                         setForm(new StudentForm(cleanObject(student)));
                         setFormVisible(true);
                     }}>
                         <p className="font-bold text-lg">{capitalize(student.name)}</p>
-                        <p className="text-sm">{prismaDate(student.birthday).toLocaleDateString()}</p>
+                        <p className="text-sm">{student.status}</p>
                         <p className="text-sm">
                             {(() => {
                                 if (!student.birthday) return "Idade desconhecida";
@@ -125,7 +125,6 @@ export default function Students() {
                     </li>
                 ))}
             </ul>
-
             <StudentTabForm form={form} onChange={handleChange} visible={formVisible} onVisibilityChanged={setFormVisible} onSubmit={handleSubmit} guardians={guardians} />
 
             <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new StudentForm()); setFormVisible(true) }} />

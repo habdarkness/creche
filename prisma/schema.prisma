@@ -62,13 +62,13 @@ model Student {
     classification   String?
 
     //família
-    dad_id Int?      @unique
+    dad_id Int?
     dad    Guardian? @relation("dad_of", fields: [dad_id], references: [id])
 
-    mom_id Int?      @unique
+    mom_id Int?
     mom    Guardian? @relation("mom_of", fields: [mom_id], references: [id])
 
-    guardian_id Int?      @unique
+    guardian_id Int?
     guardian    Guardian? @relation("guardian_of", fields: [guardian_id], references: [id])
 
     family     Json?

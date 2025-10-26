@@ -3,9 +3,11 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import FormInput from "./FormInput";
 import TabForm from "./TabForm";
 import { studentBuildings, studentClassifications, studentColor, studentFloors, StudentForm, studentHouses, studentMobility, studentRoofs, studentStatus } from "@/models/StudentForm";
-import { faCakeCandles, faUser, faVenusMars } from "@fortawesome/free-solid-svg-icons";
+import { faArrowDown19, faBowlFood, faBuilding, faCakeCandles, faCalendarDay, faCity, faDroplet, faFile, faFlag, faFont, faHouse, faIdCard, faMoneyBill, faNotesMedical, faPalette, faPhone, faPhoneAlt, faPrint, faRoad, faSave, faUser, faVenusMars, faVirus, faWheelchair } from "@fortawesome/free-solid-svg-icons";
 import { prismaDate } from "@/lib/prismaLib";
 import { Guardian } from "@prisma/client";
+import FormButtonGroup from "./FormButtonGroup";
+import FormButton from "./FormButton";
 
 type Props = {
     form: StudentForm;
@@ -24,11 +26,15 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
     const guardianOptions = guardians.map(guardian => [guardian.id, guardian.name]) as [number, string][];
 
     return (
-        <TabForm visible={visible} tabs={tabs} tab={tab} onTabChanged={setTab} onCancel={() => onVisibilityChanged(false)} onSubmit={onSubmit} submit={form.id == -1 ? "Cadastrar" : "Atualizar"}>
+        <TabForm visible={visible} tabs={tabs} tab={tab} onTabChanged={setTab} onCancel={() => onVisibilityChanged(false)} onSubmit={onSubmit}>
+            <FormButtonGroup>
+                <FormButton submit text={form.id == -1 ? "Cadastrar" : "Atualizar"} icon={faSave} />
+                <FormButton text="Imprimir" color="bg-yellow-600" icon={faPrint} />
+            </FormButtonGroup>
             {tab == "Matrícula" ? (
                 <>
-                    <FormInput id="status" label="Estado da matrícula" icon={faUser} value={form.status} options={studentStatus} onChange={onChange} />
-                    <FormInput id="name" label="Nome" icon={faUser} value={form.name} onChange={onChange} />
+                    <FormInput id="status" label="Estado da matrícula" icon={faFile} value={form.status} options={studentStatus} onChange={onChange} />
+                    <FormInput id="name" label="Nome" icon={faFont} value={form.name} onChange={onChange} />
                     <FormInput
                         id="birthday"
                         type="date"
@@ -41,7 +47,7 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
                     <FormInput
                         id="color"
                         label="Cor/Raça"
-                        icon={faUser}
+                        icon={faPalette}
                         options={studentColor}
                         value={form.color}
                         onChange={onChange}
@@ -60,18 +66,18 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
                         value={form.sus}
                         onChange={onChange}
                     />
-                    <FormInput id="health_issues" label="Problemas de Saúde" icon={faUser} value={form.health_issues} onChange={onChange} />
-                    <FormInput id="food_restriction" label="Restrição Alimentar" icon={faUser} value={form.food_restriction} onChange={onChange} />
-                    <FormInput id="allergy" label="Alergia" icon={faUser} value={form.allergy} onChange={onChange} />
-                    <FormInput id="mobility" label="Mobilidade Reduzida" options={studentMobility} icon={faUser} value={form.mobility} onChange={onChange} />
-                    <FormInput id="disabilities" label="Possui Deficiências Múltiplas" icon={faUser} value={form.disabilities} onChange={onChange} />
-                    <FormInput id="special_needs" label="Criança Público Alvo de Educação Especial" icon={faUser} value={form.special_needs} onChange={onChange} />
-                    <FormInput id="classification" label="Classificação" icon={faUser} options={studentClassifications} value={form.special_needs} onChange={onChange} />
+                    <FormInput id="health_issues" label="Problemas de Saúde" icon={faNotesMedical} value={form.health_issues} onChange={onChange} />
+                    <FormInput id="food_restriction" label="Restrição Alimentar" icon={faBowlFood} value={form.food_restriction} onChange={onChange} />
+                    <FormInput id="allergy" label="Alergia" icon={faVirus} value={form.allergy} onChange={onChange} />
+                    <FormInput id="mobility" label="Mobilidade Reduzida" options={studentMobility} icon={faWheelchair} value={form.mobility} onChange={onChange} />
+                    <FormInput id="disabilities" label="Possui Deficiências Múltiplas" icon={faNotesMedical} value={form.disabilities} onChange={onChange} />
+                    <FormInput id="special_needs" label="Criança Público Alvo de Educação Especial" icon={faNotesMedical} value={form.special_needs} onChange={onChange} />
+                    <FormInput id="classification" label="Classificação" icon={faNotesMedical} options={studentClassifications} value={form.special_needs} onChange={onChange} />
                 </>
             ) : tab == "Auxílio" ? (
                 <>
-                    <FormInput id="gov_aid" label="O Responsável é Beneficiário do Governo" icon={faUser} value={form.gov_aid} onChange={onChange} />
-                    <FormInput id="nis_number" label="Número do NIS" icon={faUser} value={form.nis_number} onChange={onChange} />
+                    <FormInput id="gov_aid" label="O Responsável é Beneficiário do Governo" icon={faFile} value={form.gov_aid} onChange={onChange} />
+                    <FormInput id="nis_number" label="Número do NIS" icon={faArrowDown19} value={form.nis_number} onChange={onChange} />
                 </>
             ) : tab == "Responsáveis" ? (
                 <>
@@ -137,51 +143,51 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
             ) : tab == "Endereço" ? (
                 <>
                     <div className="flex gap-2">
-                        <FormInput id="street" label="Rua" icon={faUser} value={form.street} onChange={onChange} />
-                        <FormInput id="number" label="Número" icon={faUser} value={form.number} onChange={onChange} />
-                        <FormInput id="neighborhood" label="Bairro" icon={faUser} value={form.neighborhood} onChange={onChange} />
+                        <FormInput id="street" label="Rua" icon={faRoad} value={form.street} onChange={onChange} />
+                        <FormInput id="number" label="Número" icon={faHouse} value={form.number} onChange={onChange} />
+                        <FormInput id="neighborhood" label="Bairro" icon={faHouse} value={form.neighborhood} onChange={onChange} />
                     </div>
                     <div className="flex gap-2">
-                        <FormInput id="city" label="Município" icon={faUser} value={form.city} onChange={onChange} fullWidth />
-                        <FormInput id="state" label="UF" icon={faUser} value={form.state} onChange={onChange} />
+                        <FormInput id="city" label="Município" icon={faCity} value={form.city} onChange={onChange} fullWidth />
+                        <FormInput id="state" label="UF" icon={faFlag} value={form.state} onChange={onChange} />
                     </div>
-                    <FormInput id="reference" label="Pontos de Referência" icon={faUser} value={form.reference} onChange={onChange} />
-                    <FormInput id="cep" label="CEP" icon={faUser} value={form.cep} onChange={onChange} />
+                    <FormInput id="reference" label="Pontos de Referência" icon={faHouse} value={form.reference} onChange={onChange} />
+                    <FormInput id="cep" label="CEP" icon={faHouse} value={form.cep} onChange={onChange} />
                     <div className={divStyle}>
-                        <FormInput id="phone_home" label="Contato" icon={faUser} value={form.phone_home} onChange={onChange} fullWidth />
-                        <FormInput id="phone_alt" label="Outro contato" icon={faUser} value={form.phone_alt} onChange={onChange} fullWidth />
+                        <FormInput id="phone_home" label="Contato" icon={faPhone} value={form.phone_home} onChange={onChange} fullWidth />
+                        <FormInput id="phone_alt" label="Outro contato" icon={faPhone} value={form.phone_alt} onChange={onChange} fullWidth />
                     </div>
                 </>
             ) : tab == "Documentação" ? (
                 <>
                     <div className={divStyle}>
-                        <FormInput id="birth_cert" label="Certidão de Nascimento Nº" icon={faUser} value={form.birth_cert} onChange={onChange} fullWidth />
-                        <FormInput id="birth_city" label="Município de Nascimento" icon={faUser} value={form.birth_city} onChange={onChange} fullWidth />
+                        <FormInput id="birth_cert" label="Certidão de Nascimento Nº" icon={faIdCard} value={form.birth_cert} onChange={onChange} fullWidth />
+                        <FormInput id="birth_city" label="Município de Nascimento" icon={faIdCard} value={form.birth_city} onChange={onChange} fullWidth />
                     </div>
                     <div className={divStyle}>
-                        <FormInput id="registry_city" label="Município de Registro" icon={faUser} value={form.registry_city} onChange={onChange} fullWidth />
-                        <FormInput id="registry_office" label="Cartório de Registro" icon={faUser} value={form.street} onChange={onChange} fullWidth />
+                        <FormInput id="registry_city" label="Município de Registro" icon={faCity} value={form.registry_city} onChange={onChange} fullWidth />
+                        <FormInput id="registry_office" label="Cartório de Registro" icon={faBuilding} value={form.street} onChange={onChange} fullWidth />
                     </div>
-                    <FormInput id="cpf" label="CPF" icon={faUser} value={form.cpf} onChange={onChange} />
+                    <FormInput id="cpf" label="CPF" icon={faIdCard} value={form.cpf} onChange={onChange} />
                     <div className={divStyle}>
-                        <FormInput id="rg" label="RG" icon={faUser} value={form.rg} onChange={onChange} />
-                        <FormInput id="rg_issue_date" label="Data de Emissão" type="date" icon={faUser} value={form.rg_issue_date ? prismaDate(form.rg_issue_date).toISOString().substring(0, 10) : ""} onChange={onChange} />
-                        <FormInput id="rg_issuer" label="Orgão Emissor" icon={faUser} value={form.rg_issuer} onChange={onChange} />
+                        <FormInput id="rg" label="RG" icon={faIdCard} value={form.rg} onChange={onChange} />
+                        <FormInput id="rg_issue_date" label="Data de Emissão" type="date" icon={faCalendarDay} value={form.rg_issue_date ? prismaDate(form.rg_issue_date).toISOString().substring(0, 10) : ""} onChange={onChange} />
+                        <FormInput id="rg_issuer" label="Orgão Emissor" icon={faBuilding} value={form.rg_issuer} onChange={onChange} />
                     </div>
                 </>
             ) : tab == "Casa" ? (
                 <>
-                    <FormInput id="type" label="Casa" icon={faUser} options={studentHouses} value={form.type} onChange={onChange} />
-                    <FormInput id="rent_value" label="Valor do Aluguel" icon={faUser} type="number" value={form.rent_value} onChange={onChange} />
-                    <FormInput id="rooms" label="Nº de Comodos" icon={faUser} type="number" value={form.rooms} onChange={onChange} />
+                    <FormInput id="type" label="Casa" icon={faHouse} options={studentHouses} value={form.type} onChange={onChange} />
+                    <FormInput id="rent_value" label="Valor do Aluguel" icon={faMoneyBill} type="number" value={form.rent_value} onChange={onChange} />
+                    <FormInput id="rooms" label="Nº de Comodos" icon={faHouse} type="number" value={form.rooms} onChange={onChange} />
                     <div className={divStyle}>
-                        <FormInput id="floor_type" label="Tipo de Piso" icon={faUser} options={studentFloors} value={form.floor_type} onChange={onChange} fullWidth />
-                        <FormInput id="building_type" label="Tipo de Moradia" icon={faUser} options={studentBuildings} value={form.building_type} onChange={onChange} fullWidth />
-                        <FormInput id="roof_type" label="Tipo de Cobertura" icon={faUser} options={studentRoofs} value={form.building_type} onChange={onChange} fullWidth />
+                        <FormInput id="floor_type" label="Tipo de Piso" icon={faHouse} options={studentFloors} value={form.floor_type} onChange={onChange} fullWidth />
+                        <FormInput id="building_type" label="Tipo de Moradia" icon={faHouse} options={studentBuildings} value={form.building_type} onChange={onChange} fullWidth />
+                        <FormInput id="roof_type" label="Tipo de Cobertura" icon={faHouse} options={studentRoofs} value={form.building_type} onChange={onChange} fullWidth />
                     </div>
                     <div className="flex flex-wrap gap-4 justify-center">
-                        <FormInput id="sewer" label="Fossa" icon={faUser} value={form.sewer} onChange={onChange} />
-                        <FormInput id="septic_tank" label="Cifon" icon={faUser} value={form.septic_tank} onChange={onChange} />
+                        <FormInput id="sewer" label="Fossa" icon={faDroplet} value={form.sewer} onChange={onChange} />
+                        <FormInput id="septic_tank" label="Cifon" icon={faDroplet} value={form.septic_tank} onChange={onChange} />
                         <FormInput id="electricity" label="Energia Elétrica" icon={faUser} value={form.electricity} onChange={onChange} />
                         <FormInput id="water" label="Água Encanada" icon={faUser} value={form.water} onChange={onChange} />
                     </div>

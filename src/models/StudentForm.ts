@@ -104,9 +104,9 @@ export class StudentForm {
 
     constructor(data: Partial<StudentForm> = {}) {
         Object.assign(this, data);
-        this.dad_id = Number(data.dad_id);
-        this.mom_id = Number(data.mom_id);
-        this.guardian_id = Number(data.guardian_id);
+        this.dad_id = data.dad_id ? Number(data.dad_id) : -1;
+        this.mom_id = data.mom_id ? Number(data.mom_id) : -1;
+        this.guardian_id = data.guardian_id ? Number(data.guardian_id) : -1;
         this.phone_home = formatPhone(data.phone_home ?? "");
         this.phone_alt = formatPhone(data.phone_alt ?? "");
         if (Array.isArray(data.authorized)) {

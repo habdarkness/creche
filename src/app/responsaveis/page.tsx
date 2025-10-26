@@ -186,26 +186,28 @@ export default function Guardians() {
                 <FormInput id="other_phone" label="Outro Telefone" icon={faUser} value={form.other_phone} onChange={handleChange} />
                 <div className="bg-background-darker p-2 rounded-3xl">
                     <p className="text-center text-primary font-bold mb-2">Estudantes vinculados</p>
-                    {form.getStudents().map(student => (
-                        <li key={student.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:bg-primary transition" onClick={() => {
-                            setStudentForm(new StudentForm(cleanObject(student)));
-                            setStudentFormVisible(true);
-                        }}>
-                            <p className="font-bold text-lg">{capitalize(student.name)}</p>
-                            <p className="text-sm">{prismaDate(student.birthday).toLocaleDateString()}</p>
-                            <p className="text-sm">
-                                {(() => {
-                                    if (!student.birthday) return "Idade desconhecida";
-                                    const birthDate = prismaDate(student.birthday);
-                                    const today = new Date();
-                                    let age = today.getFullYear() - birthDate.getFullYear();
-                                    const m = today.getMonth() - birthDate.getMonth();
-                                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; }
-                                    return `${age} anos`;
-                                })()}
-                            </p>
-                        </li>
-                    ))}
+                    <ul className="grid grid-cols-2 md:grid-cols-3 w-full gap-4">
+                        {form.getStudents().map(student => (
+                            <li key={student.id} className={`flex flex-col  bg-primary-darker p-2 rounded-2xl hover:bg-primary transition ${student.status != "Matriculado" && "opacity-75"}`} onClick={() => {
+                                setStudentForm(new StudentForm(cleanObject(student)));
+                                setStudentFormVisible(true);
+                            }}>
+                                <p className="font-bold text-lg">{capitalize(student.name)}</p>
+                                <p className="text-sm">{student.status}</p>
+                                <p className="text-sm">
+                                    {(() => {
+                                        if (!student.birthday) return "Idade desconhecida";
+                                        const birthDate = prismaDate(student.birthday);
+                                        const today = new Date();
+                                        let age = today.getFullYear() - birthDate.getFullYear();
+                                        const m = today.getMonth() - birthDate.getMonth();
+                                        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; }
+                                        return `${age} anos`;
+                                    })()}
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             </TabForm>
             <StudentTabForm form={studentForm} onChange={handleStudentChange} onSubmit={handleStudentSubmit} visible={studentFormVisible} onVisibilityChanged={setStudentFormVisible} guardians={guardians} />
