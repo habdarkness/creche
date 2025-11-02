@@ -49,3 +49,16 @@ export function formatPhone(phone: string): string {
 
     return formatted;
 }
+export function formatCurrency(value: number) {
+    return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", })
+}
+export function formatDate(value?: Date | string | null): string {
+    if (!value) return "";
+    const date = typeof value === "string" ? new Date(value) : value;
+    if (isNaN(date.getTime())) return "";
+
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
+}

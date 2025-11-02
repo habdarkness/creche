@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient, Student } from "@prisma/client";
 import { VerifyUser } from "@/lib/auth";
-import { StudentWithRelations } from "@/types/prismaTypes";
 
 const prisma = new PrismaClient();
 
@@ -26,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { student, address, documents, housing, assets } = data;
+    const { student, address, document, housing, asset } = data;
     let id = "id" in student ? student.id : undefined;
 
     try {
@@ -44,7 +43,6 @@ export async function POST(request: Request) {
                 });
             }
 
-            // Função utilitária para limpar valores vazios ("" → null)
             const clean = (obj: any) =>
                 Object.fromEntries(
                     Object.entries(obj ?? {}).map(([key, value]) => [
@@ -54,9 +52,9 @@ export async function POST(request: Request) {
                 );
 
             const addressData = clean(address);
-            const documentsData = clean(documents);
+            const documentData = clean(document);
             const housingData = clean(housing);
-            const assetsData = clean(assets);
+            const assetData = clean(asset);
 
             // Upserts dentro da transação
             const newAddress = await tx.address.upsert({
@@ -65,41 +63,38 @@ export async function POST(request: Request) {
                 update: addressData,
             });
 
-            const newDocuments = await tx.documents.upsert({
+            const newDocument = await tx.documents.upsert({
                 where: { student_id: id },
-                create: { ...documentsData, student_id: id },
-                update: documentsData,
+                create: { ...documentData, student_id: id },
+                update: documentData,
             });
-
             const newHousing = await tx.housing.upsert({
                 where: { student_id: id },
                 create: { ...housingData, student_id: id },
                 update: housingData,
             });
-
-            const newAssets = await tx.assets.upsert({
+            const newAsset = await tx.assets.upsert({
                 where: { student_id: id },
-                create: { ...assetsData, student_id: id },
-                update: assetsData,
+                create: { ...assetData, student_id: id },
+                update: assetData,
             });
 
             return {
                 newStudent,
                 newAddress,
-                newDocuments,
+                newDocument,
                 newHousing,
-                newAssets,
+                newAsset,
             };
         });
-
         return NextResponse.json({
             message: id ? "Estudante atualizado" : "Estudante criado",
             student: {
                 ...result.newStudent,
                 address: result.newAddress,
-                documents: result.newDocuments,
+                document: result.newDocument,
                 housing: result.newHousing,
-                assets: result.newAssets,
+                asset: result.newAsset,
             },
         });
     } catch (error) {

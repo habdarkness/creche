@@ -18,6 +18,7 @@ model User {
     level          Int      @default(3)
     active         Boolean  @default(true)
     createdAt      DateTime @default(now())
+    Class          Class?
 }
 
 model Guardian {
@@ -44,10 +45,12 @@ model Student {
     gender       String
     color        String
     twins        Boolean  @default(false)
-    has_brothers Boolean  @default(false)
+    has_siblings Boolean  @default(false)
     //série
     school_year  String?
     school_grade String?
+    class_id     Int?
+    class        Class?   @relation(fields: [class_id], references: [id])
 
     // SUS
     sus Json
@@ -122,8 +125,8 @@ model Housing {
     floor_type    String?
     building_type String?
     roof_type     String?
-    sewer         Boolean?
     septic_tank   Boolean?
+    cifon         Boolean?
     electricity   Boolean?
     water         Boolean?
     student_id    Int?     @unique
@@ -153,4 +156,12 @@ model Assets {
     car             Boolean? @default(false)
     student_id      Int?     @unique
     student         Student? @relation(fields: [student_id], references: [id])
+}
+
+model Class {
+    id           Int       @id @default(autoincrement())
+    name         String?
+    professor_id Int?      @unique
+    professor    User?     @relation(fields: [professor_id], references: [id])
+    students     Student[]
 }

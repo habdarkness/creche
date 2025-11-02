@@ -7,6 +7,7 @@ import { capitalize } from "@/lib/format";
 import { useSearch, useTab } from "@/components/Contexts";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import SearchBar from "./SearchBar";
+import Image from "next/image";
 
 export default function Header() {
     const pathname = usePathname();
@@ -66,9 +67,17 @@ export default function Header() {
         redirect(newTab);
     }
     return (
-        <header className="w-full bg-background p-2" onMouseLeave={() => setHovered(false)}>
+        <header className="w-full bg-background p-2 max-h-20" onMouseLeave={() => setHovered(false)}>
             <div className="flex flex-row items-center gap-4 w-full">
                 <div className="flex gap-4 w-full items-center">
+                    <Image
+                        src="/icon.png"
+                        alt="Logo da Creche Estrela"
+                        width={64}
+                        height={64}
+                        className="size-[48px]"
+                        priority
+                    />
                     <h1 className="text-2xl font-bold">Estrela do Oriente</h1>
                     {session && !session.user.temporary && (
                         <>

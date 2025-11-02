@@ -3,11 +3,13 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import FormInput from "./FormInput";
 import TabForm from "./TabForm";
 import { studentBuildings, studentClassifications, studentColor, studentFloors, StudentForm, studentHouses, studentMobility, studentRoofs, studentStatus } from "@/models/StudentForm";
-import { faArrowDown19, faBowlFood, faBuilding, faCakeCandles, faCalendarDay, faCity, faDroplet, faFile, faFlag, faFont, faHouse, faIdCard, faMoneyBill, faNotesMedical, faPalette, faPhone, faPhoneAlt, faPrint, faRoad, faSave, faUser, faVenusMars, faVirus, faWheelchair } from "@fortawesome/free-solid-svg-icons";
+import { faArrowDown19, faBowlFood, faBuilding, faCakeCandles, faCalendarDay, faCity, faDroplet, faFile, faFileWord, faFlag, faFont, faHouse, faIdCard, faMoneyBill, faNotesMedical, faPalette, faPhone, faPhoneAlt, faPrint, faRoad, faSave, faUser, faVenusMars, faVirus, faWheelchair } from "@fortawesome/free-solid-svg-icons";
 import { prismaDate } from "@/lib/prismaLib";
 import { Guardian } from "@prisma/client";
 import FormButtonGroup from "./FormButtonGroup";
 import FormButton from "./FormButton";
+import Swal from "sweetalert2";
+import { formatCurrency } from "@/lib/format";
 
 type Props = {
     form: StudentForm;
@@ -21,15 +23,44 @@ type Props = {
 export default function StudentTabForm({ form, onChange, visible, onVisibilityChanged, onSubmit, guardians = [] }: Props) {
     const tabs = ["Matrícula", "Saúde", "Auxílio", "Responsáveis", "Endereço", "Documentação", "Casa", "Bens"]
     const [tab, setTab] = useState(tabs[0])
-
+    const [word, setWord] = useState(false);
     const divStyle = "flex flex-col gap-2 sm:flex-row";
     const guardianOptions = guardians.map(guardian => [guardian.id, guardian.name]) as [number, string][];
+
+    async function handlePrint() {
+        setWord(true);
+        const res = await fetch("/api/export-student", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: form.id }),
+        });
+
+        if (!res.ok) {
+            Swal.fire({
+                title: "Erro ao gerar documento",
+                icon: "error"
+            })
+            setWord(false);
+            return;
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Ficha_${form.name}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        setWord(false);
+    };
 
     return (
         <TabForm visible={visible} tabs={tabs} tab={tab} onTabChanged={setTab} onCancel={() => onVisibilityChanged(false)} onSubmit={onSubmit}>
             <FormButtonGroup>
+                <FormButton color="bg-yellow-600" icon={faFileWord} onClick={handlePrint} loading={word} />
                 <FormButton submit text={form.id == -1 ? "Cadastrar" : "Atualizar"} icon={faSave} />
-                <FormButton text="Imprimir" color="bg-yellow-600" icon={faPrint} />
             </FormButtonGroup>
             {tab == "Matrícula" ? (
                 <>
@@ -54,7 +85,7 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
                     />
                     <div className="flex justify-center gap-2">
                         <FormInput id="twins" label="Gêmeos" icon={faUser} value={form.twins} onChange={onChange} />
-                        <FormInput id="has_brothers" label="Irmãos" icon={faUser} value={form.has_brothers} onChange={onChange} />
+                        <FormInput id="has_siblings" label="Irmãos" icon={faUser} value={form.has_siblings} onChange={onChange} />
                     </div>
                 </>
             ) : tab == "Saúde" ? (
@@ -116,21 +147,10 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
                         onChange={onChange}
                     />
 
-                    {Array.isArray(form.family) && form.family.length > 0 && (() => {
-                        const total = form.family.reduce((sum, member) => sum + (Number(member["sálario"]) || 0), 0);
-                        const perCapita = total / form.family.length;
-
-                        // formatador de moeda brasileira
-                        const formatCurrency = (value: number) =>
-                            value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", });
-
-                        return (
-                            <div className="grid grid-cols-2 mt-2 text-primary text-sm text-center">
-                                <h1>Renda familiar total: <strong>{formatCurrency(total)}</strong></h1>
-                                <h1>Renda per capita: <strong>{formatCurrency(perCapita)}</strong></h1>
-                            </div>
-                        );
-                    })()}
+                    <div className="grid grid-cols-2 mt-2 text-primary text-sm text-center">
+                        <h1>Renda familiar total: <strong>{formatCurrency(form.getTotal())}</strong></h1>
+                        <h1>Renda per capita: <strong>{formatCurrency(form.getPerCapta())}</strong></h1>
+                    </div>
 
                     <FormInput
                         id="authorized"
@@ -186,8 +206,8 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
                         <FormInput id="roof_type" label="Tipo de Cobertura" icon={faHouse} options={studentRoofs} value={form.building_type} onChange={onChange} fullWidth />
                     </div>
                     <div className="flex flex-wrap gap-4 justify-center">
-                        <FormInput id="sewer" label="Fossa" icon={faDroplet} value={form.sewer} onChange={onChange} />
-                        <FormInput id="septic_tank" label="Cifon" icon={faDroplet} value={form.septic_tank} onChange={onChange} />
+                        <FormInput id="septic_tank" label="Fossa" icon={faDroplet} value={form.septic_tank} onChange={onChange} />
+                        <FormInput id="cifon" label="Cifon" icon={faDroplet} value={form.cifon} onChange={onChange} />
                         <FormInput id="electricity" label="Energia Elétrica" icon={faUser} value={form.electricity} onChange={onChange} />
                         <FormInput id="water" label="Água Encanada" icon={faUser} value={form.water} onChange={onChange} />
                     </div>

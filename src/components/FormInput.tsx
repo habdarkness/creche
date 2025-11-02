@@ -31,7 +31,7 @@ export default function FormInput({
         if (value && typeof value === "object") { return Array.isArray(value) ? value : [value]; }
         return [];
     }, [value]);
-
+    if (value == null) { value = ""; }
     const keys = useMemo(() => {
         if (objectValue.length > 0 && typeof objectValue[0] === "object") {
             return Object.fromEntries(
@@ -81,7 +81,7 @@ export default function FormInput({
                                     </React.Fragment>
                                 ))}
                             </div>
-                            {Array.isArray(value) && (
+                            {Array.isArray(value) && value.length > 1 && (
                                 <FontAwesomeIcon
                                     icon={faTrash}
                                     className="text-primary-darker text-xl hover:text-red-500 transition"
@@ -141,15 +141,15 @@ export default function FormInput({
                                     disabled={!editable}
                                 >
                                     {options.length > 0 && Array.isArray(options[0]) ? (
-                                        <option value={-1} className="text-primary bg-primary-darker font-bold">Selecione uma opção</option>
+                                        <option value={-1} className="text-white bg-primary-darker font-bold">Selecione uma opção</option>
                                     ) : (
-                                        <option value={`Selecione uma opção`} className="text-primary bg-primary-darker font-bold">Selecione uma opção</option>
+                                        <option value={`Selecione uma opção`} className="text-white bg-primary-darker font-bold">Selecione uma opção</option>
                                     )}
                                     {options.map((opt) => {
                                         if (Array.isArray(opt)) {
                                             if (!opt[1].includes(searchText) && opt[0] != value) return;
                                             return (
-                                                <option key={opt[0]} value={opt[0]} className="text-primary bg-primary-darker font-bold">
+                                                <option key={opt[0]} value={opt[0]} className="text-white bg-primary-darker font-bold">
                                                     {opt[1]}
                                                 </option>
                                             )
@@ -157,7 +157,7 @@ export default function FormInput({
                                         else {
                                             if (!opt.includes(searchText) && opt != value) return;
                                             return (
-                                                <option key={opt} value={opt} className="text-primary bg-primary-darker font-bold">
+                                                <option key={opt} value={opt} className="text-white bg-primary-darker font-bold">
                                                     {opt}
                                                 </option>
                                             )

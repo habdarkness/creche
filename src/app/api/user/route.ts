@@ -61,7 +61,6 @@ export async function POST(request: Request) {
             });
         }
         else {
-            console.log({ name, email, level, type, token_password });
             if (!name || !email || !level || !type || !phone) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
             const hashedPassword = await bcrypt.hash(generateToken(), 10);
             user = await prisma.user.create({ data: { name, email, phone, level, type, password: hashedPassword, token_password: hashedPassword } });

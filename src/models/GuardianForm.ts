@@ -49,7 +49,6 @@ export class GuardianForm {
     }
     verify() {
         const result = schema.safeParse(this.getData());
-        console.log(this.getData().birthday);
         if (!result.success) {
             return result.error.issues.map(i => i.message).join("<br>");
         }

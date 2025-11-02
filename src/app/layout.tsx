@@ -15,8 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Creche Estrela",
-	description: "Creche Estrela",
+	title: "Estrela do Oriente",
+	description: "Estrela do Oriente",
+	icons: {
+		icon: "/favicon.png",
+	},
 };
 
 export default function RootLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {

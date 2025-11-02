@@ -9,8 +9,9 @@ import PageButton from "@/components/PageButton";
 import TabForm from "@/components/TabForm";
 import { capitalize } from "@/lib/format";
 import { generateToken } from "@/lib/generateToken";
+import { prismaDate } from "@/lib/prismaLib";
 import { UserForm, userTypes } from "@/models/UserForm";
-import { faArrowUp19, faBriefcase, faEnvelope, faKey, faUser, faUserTie } from "@fortawesome/free-solid-svg-icons";
+import { faBriefcase, faEnvelope, faKey, faUser } from "@fortawesome/free-solid-svg-icons";
 import { User } from "@prisma/client";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -100,14 +101,16 @@ export default function Users() {
             <h1 className="text-2xl font-bold mb-4">Usuários</h1>
             <ul className=" grid grid-cols-4 w-full gap-4">
                 {filteredUsers.map(user => (
-                    <li key={user.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
+                    <li key={user.id} className="flex flex-col  bg-primary-darker text-white p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
                         setForm(new UserForm({ ...user, send_token: false }));
                         setFormVisible(true);
-                        console.log(form)
                     }}>
-                        <p className="font-bold text-lg">{capitalize(user.name)}</p>
-                        <p className="text-sm">{capitalize(user.type)}</p>
+                        <div className="flex justify-between gap-1 flex-wrap">
+                            <p className="font-bold text-lg">{capitalize(user.name)}</p>
+                            <p className="text-sm">{capitalize(user.type)}</p>
+                        </div>
                         <p className="text-sm">{user.email}</p>
+                        <p className="text-sm mx-auto text-black opacity-50 font-bold">Criado {prismaDate(user.createdAt).toLocaleDateString("PT-BR")}</p>
                     </li>
                 ))}
             </ul>
@@ -124,10 +127,10 @@ export default function Users() {
                     fullWidth
                 />
                 <FormButtonGroup>
-                    <FormButton submit text={form.id == -1 ? "Cadastrar" : "Atualizar"} />
                     {form.id != -1 && (
                         <FormButton text={form.send_token ? `Senha: ${form.token_password}` : "Resetar senha"} color="bg-red-400" icon={faKey} onClick={() => setForm(prev => new UserForm({ ...prev, token_password: generateToken(), send_token: true }))} />
                     )}
+                    <FormButton submit text={form.id == -1 ? "Cadastrar" : "Atualizar"} />
                 </FormButtonGroup>
             </TabForm>
             <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new UserForm()); setFormVisible(true); }} />

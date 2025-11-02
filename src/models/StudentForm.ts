@@ -1,7 +1,8 @@
-import { formatPhone, formatRG, parseID } from "@/lib/format";
+import { formatCPF, formatCurrency, formatPhone, formatRG, parseID } from "@/lib/format";
+import { Guardian } from "@prisma/client";
 import { format } from "path";
 import { z } from "zod";
-
+//npm install docxtemplater pizzip
 export const studentStatus = ["Espera", "Matriculado", "Desligado"];
 export const studentMobility = ["Nenhuma", "Temporária", "Permanente"];
 export const studentClassifications = [
@@ -28,7 +29,7 @@ export class StudentForm {
     gender = "";
     color = studentColor[0];
     twins = false;
-    has_brothers = false;
+    has_siblings = false;
     //saúde e deficiências
     sus: Record<string, string> = { "Número do Cartão SUS": "", "Unidade de Saúde": "" };
     health_issues = "";
@@ -43,8 +44,11 @@ export class StudentForm {
     nis_number = "";
     //
     dad_id = -1;
+    dad: Guardian | null = null;
     mom_id = -1;
+    mom: Guardian | null = null;
     guardian_id = -1;
+    guardian: Guardian | null = null;
     family: Record<string, string | number | Date>[] = [
         { nome: "", parentesco: "", idade: 0, "educação": "", "profissão": "", "sálario": 0 }
     ];
@@ -77,8 +81,8 @@ export class StudentForm {
     floor_type = studentFloors[0];
     building_type = studentBuildings[0];
     roof_type = studentRoofs[0];
-    sewer = true;
     septic_tank = true;
+    cifon = true;
     electricity = true;
     water = true;
     //bens
@@ -109,6 +113,8 @@ export class StudentForm {
         this.guardian_id = data.guardian_id ? Number(data.guardian_id) : -1;
         this.phone_home = formatPhone(data.phone_home ?? "");
         this.phone_alt = formatPhone(data.phone_alt ?? "");
+        this.cpf = data.cpf ? formatCPF(data.cpf) : "";
+        this.rg = data.rg ? formatRG(data.rg) : "";
         if (Array.isArray(data.authorized)) {
             this.authorized = data.authorized.map(auth => ({
                 ...auth,
@@ -116,6 +122,68 @@ export class StudentForm {
                 contato: typeof auth.contato === "string" ? formatPhone(auth.contato) : auth.contato,
             }));
         }
+    }
+    getDocxData() {
+        const form = this.getData();
+
+        function formatDate(value: any) {
+            if (!value) return "";
+            const date = new Date(value);
+            if (isNaN(date.getTime())) return "";
+            return date.toLocaleDateString("pt-BR", { timeZone: "UTC" });
+        }
+        function convertBooleans(obj: any): any {
+            if (Array.isArray(obj)) { return obj.map(convertBooleans); }
+            else if (obj && typeof obj === "object") {
+                const newObj: any = {};
+                for (const [key, value] of Object.entries(obj)) {
+                    if (typeof value === "boolean") {
+                        newObj[key] = value ? "☑" : "☐";
+                    } else {
+                        newObj[key] = convertBooleans(value);
+                    }
+                }
+                return newObj;
+            }
+            return obj;
+        }
+        //npm install docxtemplater expressions
+        const data = {
+            ...form.student,
+            birthday: form.student.birthday ? formatDate(form.student.birthday) : "",
+            address: form.address,
+            document: form.document,
+            housing: convertBooleans(form.housing),
+            asset: convertBooleans(form.asset),
+            family: this.family.map(member => ({
+                name: member["nome"],
+                age: member["idade"],
+                kinship: member["parentesco"],
+                education: member["educação"],
+                profession: member["profissão"],
+                salary: formatCurrency(Number(member["sálario"]) || 0)
+            })),
+            total: formatCurrency(this.getTotal()),
+            per_capta: formatCurrency(this.getPerCapta()),
+        };
+        return convertBooleans(data);
+    }
+
+    getTotal() {
+        if (Array.isArray(this.family) && this.family.length > 0) {
+            const total = this.family.reduce((sum, member) =>
+                sum + (Number(member["sálario"]) || 0), 0
+            );
+            return total;
+        }
+        return 0;
+    }
+    getPerCapta() {
+        if (Array.isArray(this.family) && this.family.length > 0) {
+            const perCapta = this.getTotal() / this.family.length;
+            return perCapta;
+        }
+        return 0;
     }
 
     getData() {
@@ -128,7 +196,7 @@ export class StudentForm {
                 gender: this.gender,
                 color: this.color,
                 twins: this.twins,
-                has_brothers: this.has_brothers,
+                has_siblings: this.has_siblings,
                 sus: this.sus,
                 health_issues: this.health_issues,
                 food_restriction: this.food_restriction,
@@ -157,7 +225,7 @@ export class StudentForm {
                 phone_home: this.phone_home,
                 phone_alt: this.phone_alt
             },
-            documents: {
+            document: {
                 birth_cert: this.birth_cert,
                 registry_city: this.registry_city,
                 birth_city: this.birth_city,
@@ -174,12 +242,12 @@ export class StudentForm {
                 floor_type: this.floor_type,
                 building_type: this.building_type,
                 roof_type: this.roof_type,
-                sewer: this.sewer,
                 septic_tank: this.septic_tank,
+                cifon: this.cifon,
                 electricity: this.electricity,
                 water: this.water
             },
-            assets: {
+            asset: {
                 tv: this.tv,
                 dvd: this.dvd,
                 radio: this.radio,
@@ -204,7 +272,6 @@ export class StudentForm {
     }
     verify() {
         const result = schema.safeParse(this.getData());
-        console.log(this.getData());
         if (!result.success) {
             return result.error.issues.map(i => i.message).join("<br>");
         }

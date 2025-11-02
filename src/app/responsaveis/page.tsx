@@ -12,6 +12,7 @@ import { GuardianForm } from "@/models/GuardianForm";
 import { StudentForm } from "@/models/StudentForm";
 import { GuardianWithRelations } from "@/types/prismaTypes";
 import { faEnvelope, faUser } from "@fortawesome/free-solid-svg-icons";
+import { Student } from "@prisma/client";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
@@ -101,7 +102,6 @@ export default function Guardians() {
     }
     async function handleStudentSubmit(event: React.FormEvent) {
         event.preventDefault();
-        console.log(form.getData())
         const message = form.verify()
         if (message) return Swal.fire({
             title: "Erro de validação",
@@ -161,10 +161,16 @@ export default function Guardians() {
                     <li key={guardian.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
                         setForm(new GuardianForm({ ...guardian }));
                         setFormVisible(true);
-                        console.log(form)
                     }}>
-                        <p className="font-bold text-lg">{capitalize(guardian.name)}</p>
-                        <p className="text-sm">{capitalize(guardian.kinship)}</p>
+                        <div className="flex justify-between gap-1 flex-wrap mb-2">
+                            <p className="font-bold text-lg">{capitalize(guardian.name)}</p>
+                            <p className="text-sm">{capitalize(guardian.kinship)}</p>
+                        </div>
+                        <div className="flex justify-between gap-1 flex-wrap">
+                            <p className="text-sm">RG: {guardian.rg}</p>
+                            <p className="text-sm">Telefone: {guardian.phone}</p>
+                        </div>
+                        <p className="text-sm">Alunos vinculados: {getStudents(guardian)}</p>
                     </li>
                 ))}
             </ul>
@@ -188,8 +194,15 @@ export default function Guardians() {
                     <p className="text-center text-primary font-bold mb-2">Estudantes vinculados</p>
                     <ul className="grid grid-cols-2 md:grid-cols-3 w-full gap-4">
                         {form.getStudents().map(student => (
-                            <li key={student.id} className={`flex flex-col  bg-primary-darker p-2 rounded-2xl hover:bg-primary transition ${student.status != "Matriculado" && "opacity-75"}`} onClick={() => {
-                                setStudentForm(new StudentForm(cleanObject(student)));
+                            <li key={student.id} className={`flex flex-col  bg-primary-darker text-white p-2 rounded-2xl hover:bg-primary transition ${student.status != "Matriculado" && "opacity-75"}`} onClick={() => {
+                                const clean = cleanObject(student)
+                                setStudentForm(new StudentForm({
+                                    ...clean,
+                                    ...clean.address,
+                                    ...clean.housing,
+                                    ...clean.asset,
+                                    ...clean.document,
+                                }));
                                 setStudentFormVisible(true);
                             }}>
                                 <p className="font-bold text-lg">{capitalize(student.name)}</p>
@@ -214,4 +227,14 @@ export default function Guardians() {
             <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new GuardianForm()); setFormVisible(true); }} />
         </div>
     );
+}
+
+function getStudents(guardian: GuardianWithRelations): number {
+    const allStudents = [...guardian.dad_of, ...guardian.mom_of, ...guardian.guardian_of];
+    const uniqueMap = new Map<number, Student>();
+    allStudents.forEach(student => {
+        uniqueMap.set(student.id, student);
+    })
+    console.log(uniqueMap);
+    return uniqueMap.size;
 }

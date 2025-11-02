@@ -28,11 +28,11 @@ export default function Students() {
                 setLoading(true);
                 const resStudent = await fetch("/api/student");
                 const dataStudent = await resStudent.json();
-                setStudents(dataStudent);
+                if (resStudent.ok) { setStudents(dataStudent); }
 
                 const resGuardian = await fetch("/api/guardian");
                 const dataGuardian = await resGuardian.json();
-                setGuardians(dataGuardian);
+                if (resGuardian.ok) { setGuardians(dataGuardian); }
             }
             catch (error) { console.error("Erro ao buscar estudantes:", error); }
             finally { setLoading(false); }
@@ -52,7 +52,6 @@ export default function Students() {
     }
     async function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
-        console.log(form.getData())
         const message = form.verify()
         if (message) return Swal.fire({
             title: "Erro de validação",
@@ -83,8 +82,6 @@ export default function Students() {
                 title: `Estudante ${form.id == -1 ? "cadastrado" : "atualizado"} com sucesso!`,
                 icon: "success"
             });
-            setForm(new StudentForm());
-            setFormVisible(false);
         }
         catch (error) {
             return Swal.fire({
@@ -106,11 +103,22 @@ export default function Students() {
             <ul className=" grid grid-cols-4 w-full gap-4">
                 {filtered.map(student => (
                     <li key={student.id} className={`flex flex-col  bg-primary-darker p-2 rounded-2xl hover:bg-primary transition ${student.status != "Matriculado" && "opacity-75"}`} onClick={() => {
-                        setForm(new StudentForm(cleanObject(student)));
+                        const clean = cleanObject(student)
+                        console.log(clean)
+                        setForm(new StudentForm({
+                            ...clean,
+                            ...clean.address,
+                            ...clean.housing,
+                            ...clean.asset,
+                            ...clean.document,
+                        }));
                         setFormVisible(true);
                     }}>
-                        <p className="font-bold text-lg">{capitalize(student.name)}</p>
-                        <p className="text-sm">{student.status}</p>
+
+                        <div className="flex justify-between gap-1 flex-wrap">
+                            <p className="font-bold text-lg">{capitalize(student.name)}</p>
+                            <p className="text-sm">{student.status}</p>
+                        </div>
                         <p className="text-sm">
                             {(() => {
                                 if (!student.birthday) return "Idade desconhecida";
@@ -122,6 +130,8 @@ export default function Students() {
                                 return `${age} anos`;
                             })()}
                         </p>
+
+                        <p className="text-sm">Contato: {student.address.phone_home}</p>
                     </li>
                 ))}
             </ul>
