@@ -40,6 +40,7 @@ export async function POST(request: Request) {
                 newStudent = await tx.student.update({
                     where: { id: parseInt(id) },
                     data: student,
+
                 });
             }
 

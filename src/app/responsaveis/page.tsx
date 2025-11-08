@@ -156,9 +156,9 @@ export default function Guardians() {
     return (
         <div className="flex flex-col m-4 h-full">
             <h1 className="text-2xl font-bold mb-4">Responsáveis</h1>
-            <ul className=" grid grid-cols-4 w-full gap-4">
+            <ul className=" grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 w-full gap-4">
                 {filtered.map(guardian => (
-                    <li key={guardian.id} className="flex flex-col  bg-primary-darker p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
+                    <li key={guardian.id} className="flex flex-col  bg-primary-darker text-white p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
                         setForm(new GuardianForm({ ...guardian }));
                         setFormVisible(true);
                     }}>

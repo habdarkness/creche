@@ -8,17 +8,21 @@ datasource db {
 }
 
 model User {
-    id             Int      @id @default(autoincrement())
+    id             Int     @id @default(autoincrement())
     name           String
-    email          String   @unique
-    phone          String   @unique
+    email          String  @unique
+    phone          String  @unique
     password       String
     token_password String
     type           String
-    level          Int      @default(3)
-    active         Boolean  @default(true)
-    createdAt      DateTime @default(now())
+    level          Int     @default(3)
+    active         Boolean @default(true)
     Class          Class?
+
+    created_by String   @default("")
+    created_at DateTime @default(now())
+    reports    Report[]
+    actions    Action[]
 }
 
 model Guardian {
@@ -35,6 +39,9 @@ model Guardian {
     dad_of      Student[] @relation("dad_of")
     mom_of      Student[] @relation("mom_of")
     guardian_of Student[] @relation("guardian_of")
+
+    created_by String   @default("")
+    created_at DateTime @default(now())
 }
 
 model Student {
@@ -85,7 +92,10 @@ model Student {
     housing  Housing?
     asset    Assets?
 
-    createdAt DateTime @default(now())
+    reports Report[]
+
+    created_by String   @default("")
+    created_at DateTime @default(now())
 }
 
 model Address {
@@ -164,4 +174,31 @@ model Class {
     professor_id Int?      @unique
     professor    User?     @relation(fields: [professor_id], references: [id])
     students     Student[]
+    created_by   String    @default("")
+    created_at   DateTime  @default(now())
+}
+
+model Report {
+    id          Int     @id @default(autoincrement())
+    title       String?
+    description String?
+
+    file_path String?
+
+    professor_id Int?
+    professor    User? @relation(fields: [professor_id], references: [id])
+
+    student_id Int?
+    student    Student? @relation(fields: [student_id], references: [id])
+
+    created_by String   @default("")
+    created_at DateTime @default(now())
+}
+
+model Action {
+    id Int @id @default(autoincrement())
+
+    user_id     Int?
+    user        User?  @relation(fields: [user_id], references: [id])
+    description String
 }

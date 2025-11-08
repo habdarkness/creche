@@ -15,6 +15,7 @@ const prisma = new PrismaClient();
 export async function POST(req: Request) {
     const session = await VerifyUser();
     if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
+    if (session.level > 2) { return NextResponse.json({ error: "Não Autorizado" }, { status: 401 }); }
 
     try {
         const { id } = await req.json();

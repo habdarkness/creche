@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 export async function GET(request: Request) {
     const session = await VerifyUser();
     if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
+    if (session.level > 2) { return NextResponse.json({ error: "Não Autorizado" }, { status: 401 }); }
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
@@ -21,6 +22,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     const session = await VerifyUser();
     if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
+    if (session.level > 2) { return NextResponse.json({ error: "Não Autorizado" }, { status: 401 }); }
 
     const data = await request.json();
     const { id, name, birthday, rg, cpf, kinship, phone, workplace, other_phone } = data;

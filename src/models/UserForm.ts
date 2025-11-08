@@ -1,8 +1,8 @@
 import { z } from "zod";
 export const userTypes: Record<string, number> = {
     "Administrador": 1,
-    "Secretário": 1,
-    "Professor": 2,
+    "Secretário": 2,
+    "Professor": 3,
 }
 export class UserForm {
     id = -1;

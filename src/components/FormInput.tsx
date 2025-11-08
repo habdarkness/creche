@@ -15,16 +15,16 @@ type Props = {
     options?: [number, string][] | string[];
     search?: boolean;
     value: string | number | boolean | Record<string, any> | Record<string, any>[];
-    editable?: boolean
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     fullWidth?: boolean;
+    disabled?: boolean;
 }
 
 export default function FormInput({
     id, label = "", icon, fullWidth = false,
     placeholder = "Digite " + label.toLowerCase() + "...",
     type = "text", options, search = false,
-    value, onChange, editable = true
+    value, onChange, disabled = false
 }: Props) {
     const [searchText, setSearchText] = useState("");
     const objectValue = useMemo(() => {
@@ -76,12 +76,12 @@ export default function FormInput({
                                             }}
                                             placeholder={`Digite ${key}...`}
                                             className="bg-white text-primary-darker p-1 rounded-sm w-full"
-                                            readOnly={!editable}
+                                            readOnly={disabled}
                                         />
                                     </React.Fragment>
                                 ))}
                             </div>
-                            {Array.isArray(value) && value.length > 1 && (
+                            {!disabled && Array.isArray(value) && value.length > 1 && (
                                 <FontAwesomeIcon
                                     icon={faTrash}
                                     className="text-primary-darker text-xl hover:text-red-500 transition"
@@ -95,7 +95,7 @@ export default function FormInput({
                             )}
                         </div>
                     ))}
-                    {Array.isArray(value) && (
+                    {!disabled && Array.isArray(value) && (
                         <button
                             type="button"
                             className="bg-primary-darker mx-auto px-2 py-1 rounded-md hover:scale-105 transition"
@@ -109,9 +109,8 @@ export default function FormInput({
                     )}
                 </div>
             ) : typeof value == "boolean" ? (
-
                 <div className="flex items-center gap-2 text-primary font-bold">
-                    <Switch checked={value as boolean} setChecked={(checked) => onChange({ target: { id, value: checked ? true : false } } as any)} /> {label}
+                    <Switch checked={value as boolean} setChecked={(checked) => onChange({ target: { id, value: checked ? true : false } } as any)} disabled={disabled} /> {label}
                 </div>
             ) : (
                 <>
@@ -120,7 +119,7 @@ export default function FormInput({
                         {icon && (<FontAwesomeIcon icon={icon} />)}
                         {options ? (
                             <div className={`grid ${search && "grid-cols-1 gap-2 md:grid-cols-[1fr_2fr]"} w-full`}>
-                                {search && (
+                                {!disabled && search && (
                                     <input
                                         value={searchText}
                                         placeholder="Pesquise..."
@@ -138,7 +137,7 @@ export default function FormInput({
                                     }
                                     onChange={onChange}
                                     className={`w-full ${search ? "bg-primary p-2 rounded-sm " : "bg-transparent"}`}
-                                    disabled={!editable}
+                                    disabled={disabled}
                                 >
                                     {options.length > 0 && Array.isArray(options[0]) ? (
                                         <option value={-1} className="text-white bg-primary-darker font-bold">Selecione uma opção</option>
@@ -175,7 +174,7 @@ export default function FormInput({
                                 onChange={onChange}
                                 placeholder={placeholder}
                                 className="w-full mb-[-5px] min-h-[100px]"
-                                readOnly={!editable}
+                                readOnly={disabled}
                             />
                         ) : (
                             <input
@@ -187,7 +186,7 @@ export default function FormInput({
                                 onChange={onChange}
                                 placeholder={placeholder}
                                 className="w-full"
-                                readOnly={!editable}
+                                readOnly={disabled}
                             />
                         )}
                     </div>
