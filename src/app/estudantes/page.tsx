@@ -1,18 +1,17 @@
 "use client";
 
-import FormInput from "@/components/FormInput";
 import Loader from "@/components/Loader";
 import PageButton from "@/components/PageButton";
-import TabForm from "@/components/TabForm";
 import { capitalize, cleanObject } from "@/lib/format";
 import { GuardianWithRelations, StudentWithRelations } from "@/types/prismaTypes";
-import { faCakeCandles, faUser, faVenusMars } from "@fortawesome/free-solid-svg-icons";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { studentBuildings, studentClassifications, studentFloors, StudentForm, studentHouses, studentMobility, studentRoofs, studentStatus } from "../../models/StudentForm";
+import { StudentForm } from "../../models/StudentForm";
 import { prismaDate } from "@/lib/prismaLib";
 import StudentTabForm from "@/components/StudentTabForm";
 import { useSearch } from "@/components/Contexts";
+import Card from "@/components/Card";
 
 export default function Students() {
     const { search } = useSearch();
@@ -102,9 +101,8 @@ export default function Students() {
             <h1 className="text-2xl font-bold mb-4">Estudantes</h1>
             <ul className=" grid grid-cols-4 w-full gap-4">
                 {filtered.map(student => (
-                    <li key={student.id} className={`flex flex-col  bg-primary-darker p-2 rounded-2xl hover:bg-primary transition ${student.status != "Matriculado" && "opacity-75"}`} onClick={() => {
+                    <Card key={student.id} pressable disabled={student.status != "Matriculado"} onClick={() => {
                         const clean = cleanObject(student)
-                        console.log(clean)
                         setForm(new StudentForm({
                             ...clean,
                             ...clean.address,
@@ -132,7 +130,7 @@ export default function Students() {
                         </p>
 
                         <p className="text-sm">Contato: {student.address.phone_home}</p>
-                    </li>
+                    </Card>
                 ))}
             </ul>
             <StudentTabForm form={form} onChange={handleChange} visible={formVisible} onVisibilityChanged={setFormVisible} onSubmit={handleSubmit} guardians={guardians} />

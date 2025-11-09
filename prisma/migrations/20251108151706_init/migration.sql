@@ -9,7 +9,8 @@ CREATE TABLE "public"."User" (
     "type" TEXT NOT NULL,
     "level" INTEGER NOT NULL DEFAULT 3,
     "active" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_by" TEXT NOT NULL DEFAULT '',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -25,6 +26,8 @@ CREATE TABLE "public"."Guardian" (
     "phone" TEXT NOT NULL,
     "workplace" TEXT NOT NULL,
     "other_phone" TEXT NOT NULL,
+    "created_by" TEXT NOT NULL DEFAULT '',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Guardian_pkey" PRIMARY KEY ("id")
 );
@@ -38,7 +41,7 @@ CREATE TABLE "public"."Student" (
     "gender" TEXT NOT NULL,
     "color" TEXT NOT NULL,
     "twins" BOOLEAN NOT NULL DEFAULT false,
-    "has_brothers" BOOLEAN NOT NULL DEFAULT false,
+    "has_siblings" BOOLEAN NOT NULL DEFAULT false,
     "school_year" TEXT,
     "school_grade" TEXT,
     "class_id" INTEGER,
@@ -57,7 +60,8 @@ CREATE TABLE "public"."Student" (
     "authorized" JSONB,
     "gov_aid" TEXT,
     "nis_number" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_by" TEXT NOT NULL DEFAULT '',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
 );
@@ -104,8 +108,8 @@ CREATE TABLE "public"."Housing" (
     "floor_type" TEXT,
     "building_type" TEXT,
     "roof_type" TEXT,
-    "sewer" BOOLEAN,
     "septic_tank" BOOLEAN,
+    "cifon" BOOLEAN,
     "electricity" BOOLEAN,
     "water" BOOLEAN,
     "student_id" INTEGER,
@@ -145,8 +149,34 @@ CREATE TABLE "public"."Class" (
     "id" SERIAL NOT NULL,
     "name" TEXT,
     "professor_id" INTEGER,
+    "created_by" TEXT NOT NULL DEFAULT '',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Class_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Report" (
+    "id" SERIAL NOT NULL,
+    "title" TEXT,
+    "description" TEXT,
+    "file_path" TEXT,
+    "professor_id" INTEGER,
+    "student_id" INTEGER,
+    "created_by" TEXT NOT NULL DEFAULT '',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Report_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Action" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
+    "description" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Action_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -202,3 +232,12 @@ ALTER TABLE "public"."Assets" ADD CONSTRAINT "Assets_student_id_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "public"."Class" ADD CONSTRAINT "Class_professor_id_fkey" FOREIGN KEY ("professor_id") REFERENCES "public"."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Report" ADD CONSTRAINT "Report_professor_id_fkey" FOREIGN KEY ("professor_id") REFERENCES "public"."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Report" ADD CONSTRAINT "Report_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "public"."Student"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Action" ADD CONSTRAINT "Action_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

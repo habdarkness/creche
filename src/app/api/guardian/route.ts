@@ -32,9 +32,17 @@ export async function POST(request: Request) {
         }
         const newGuardian = await prisma.guardian.upsert({
             where: { id: id != undefined ? parseInt(id) : -1 },
-            create: guardian,
+            create: { ...guardian, created_by: session.name },
             update: guardian,
         });
+        await prisma.action.create({
+            data: {
+                user_id: Number(session.id),
+                description: id
+                    ? `Atualizou a ficha do responsável ${newGuardian.name}(${newGuardian.kinship})`
+                    : `Atualizou a ficha do responsável ${newGuardian.name}(${newGuardian.kinship})`
+            }
+        })
         return NextResponse.json({ message: id ? "Responsável atualizado" : "Responsável criado", guardian: newGuardian });
     }
     catch (error) { return NextResponse.json({ error: "Erro ao salvar Estudante" }, { status: 500 }); }

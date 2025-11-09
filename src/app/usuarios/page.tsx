@@ -1,5 +1,6 @@
 "use client";
 
+import Card from "@/components/Card";
 import { useSearch } from "@/components/Contexts";
 import FormButton from "@/components/FormButton";
 import FormButtonGroup from "@/components/FormButtonGroup";
@@ -64,9 +65,8 @@ export default function Users() {
             setUsers(prev => {
                 const index = prev.findIndex(u => u.id === data.user.id);
                 if (index !== -1) {
-                    const newUsers = [...prev];
-                    newUsers[index] = data.user;
-                    return newUsers;
+                    prev[index] = data.user;
+                    return prev;
                 }
                 else {
                     return [...prev, data.user];
@@ -78,8 +78,6 @@ export default function Users() {
                 text: form.send_token ? `A senha de acesso é: ${form.token_password}` : "",
                 icon: "success"
             });
-            setForm(new UserForm({ token_password: generateToken() }));
-            setFormVisible(false);
         }
         catch (error) {
             return Swal.fire({
@@ -101,7 +99,7 @@ export default function Users() {
             <h1 className="text-2xl font-bold mb-4">Usuários</h1>
             <ul className=" grid grid-cols-4 w-full gap-4">
                 {filteredUsers.map(user => (
-                    <li key={user.id} className="flex flex-col  bg-primary-darker text-white p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
+                    <Card key={user.id} pressable onClick={() => {
                         setForm(new UserForm({ ...user, send_token: false }));
                         setFormVisible(true);
                     }}>
@@ -110,8 +108,8 @@ export default function Users() {
                             <p className="text-sm">{capitalize(user.type)}</p>
                         </div>
                         <p className="text-sm">{user.email}</p>
-                        <p className="text-sm mx-auto text-black opacity-50 font-bold">Criado {prismaDate(user.createdAt).toLocaleDateString("PT-BR")}</p>
-                    </li>
+                        <p className="text-sm mx-auto text-black opacity-50 font-bold">Criado {prismaDate(user.created_at).toLocaleDateString("PT-BR")}</p>
+                    </Card>
                 ))}
             </ul>
             <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit}>

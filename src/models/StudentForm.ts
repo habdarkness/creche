@@ -123,6 +123,51 @@ export class StudentForm {
             }));
         }
     }
+
+    getAge() {
+        const today = new Date();
+        const birth = this.birthday || new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    }
+    getAgeGroup() {
+        const age = this.getAge();
+        if (age <= 1) return "0–1 anos";
+        if (age <= 3) return "2–3 anos";
+        if (age <= 5) return "4–5 anos";
+        return "Mais de 5 anos";
+    }
+
+    getTotal() {
+        if (Array.isArray(this.family) && this.family.length > 0) {
+            const total = this.family.reduce((sum, member) =>
+                sum + (Number(member["sálario"]) || 0), 0
+            );
+            return total;
+        }
+        return 0;
+    }
+    getPerCapta() {
+        if (Array.isArray(this.family) && this.family.length > 0) {
+            const perCapta = this.getTotal() / this.family.length;
+            return perCapta;
+        }
+        return 0;
+    }
+    getIncomeGroup() {
+        const perCapta = this.getPerCapta()
+        if (perCapta <= 200) return "Até 200";
+        if (perCapta <= 400) return "200–400";
+        if (perCapta <= 800) return "400–800";
+        return "Acima de 800";
+    }
+
+
     getDocxData() {
         const form = this.getData();
 
@@ -168,24 +213,6 @@ export class StudentForm {
         };
         return convertBooleans(data);
     }
-
-    getTotal() {
-        if (Array.isArray(this.family) && this.family.length > 0) {
-            const total = this.family.reduce((sum, member) =>
-                sum + (Number(member["sálario"]) || 0), 0
-            );
-            return total;
-        }
-        return 0;
-    }
-    getPerCapta() {
-        if (Array.isArray(this.family) && this.family.length > 0) {
-            const perCapta = this.getTotal() / this.family.length;
-            return perCapta;
-        }
-        return 0;
-    }
-
     getData() {
         return {
             student: {

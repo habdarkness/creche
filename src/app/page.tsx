@@ -16,13 +16,6 @@ export default function Home() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        if (status == "authenticated" && !session.user.temporary) {
-            setTab("usuarios");
-            redirect("usuarios");
-        }
-    }, [session, status])
-
     function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
         const { id, value } = event.target;
         setForm({ ...form, [id]: value });
@@ -105,7 +98,7 @@ export default function Home() {
                         {error && <p className="text-red-400 text-sm">{error}</p>}
                         <button
                             type="submit"
-                            className="flex items-center gap-2 bg-primary text-lg px-2 py-1 rounded-full hover:scale-105 transition"
+                            className="flex items-center gap-2 bg-primary text-white text-lg px-2 py-1 rounded-full hover:scale-105 transition"
                         >
                             Entrar {loading && (<Loader className="size-6" />)}
                         </button>
@@ -131,7 +124,7 @@ export default function Home() {
                         {error && <p className="text-red-400 text-sm">{error}</p>}
                         <button
                             type="submit"
-                            className="flex items-center gap-2 bg-primary text-lg px-2 py-1 rounded-full hover:scale-105 transition"
+                            className="flex items-center gap-2 bg-primary text-white text-lg px-2 py-1 rounded-full hover:scale-105 transition"
                         >
                             Criar senha {loading && (<Loader className="size-6" />)}
                         </button>

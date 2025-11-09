@@ -1,3 +1,6 @@
+export function formatLink(name: string) {
+    return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(" ", "-").toLowerCase();
+}
 export function cleanObject(object: Record<string, any>): Record<string, any> {
     return Object.fromEntries(
         Object.entries(object).map(([k, v]) => [k, v === null ? "" : v])

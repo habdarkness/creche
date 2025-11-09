@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClipboardUser, faMoon, faSun, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { faClipboardUser, faMoon, faSun, faRightFromBracket, faGear, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useSession, signOut } from "next-auth/react";
-import { capitalize } from "@/lib/format";
+import { capitalize, formatLink } from "@/lib/format";
 import { useSearch } from "@/components/Contexts";
 import { usePathname, useRouter } from "next/navigation";
 import SearchBar from "./SearchBar";
@@ -12,12 +12,17 @@ import Image from "next/image";
 export default function Header() {
     const pathname = usePathname();
     const { data: session, status } = useSession();
+    const router = useRouter();
+
+    const pages = {
+        "Minha Conta": faUser,
+        "Sair": faRightFromBracket
+    }
     const [userName, setUserName] = useState("");
     const { search, setSearch } = useSearch();
     const [dark, setDark] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
     const [hovered, setHovered] = useState(false);
-    const router = useRouter();
 
     useEffect(() => {
         //verificar thema
@@ -79,15 +84,21 @@ export default function Header() {
                         <FontAwesomeIcon className="text-reverse text-2xl ml" icon={faClipboardUser} />
                         <div
                             className={`
-                                    absolute translate-y-[50%] mt-8 flex flex-col items-center gap-2 px-4 py-2
-                                    w-full rounded-xl bg-background ${!hovered && "scale-x-0"}
+                                    absolute translate-y-[75%] flex flex-col items-center gap-2
+                                    rounded-xl bg-background ${!hovered && "scale-x-0"} p-2 
                                     border-2 border-background-darker text-reverse transition-all cursor-pointer
                                 `}
                         >
-                            <div className="flex gap-2 hover:text-primary hover:scale-105 transition" onClick={() => signOut()}>
-                                <h1 className="text-xl whitespace-nowrap">Sair</h1>
-                                <FontAwesomeIcon icon={faRightFromBracket} className="text-2xl" />
-                            </div>
+                            {Object.entries(pages).map(([name, icon]) => (
+                                <button
+                                    key={name}
+                                    className="flex gap-2 hover:text-primary hover:scale-105 transition"
+                                    onClick={() => name == "Sair" ? signOut() : router.push(formatLink(name))}
+                                >
+                                    <h1 className="text-xl whitespace-nowrap">{name}</h1>
+                                    <FontAwesomeIcon icon={icon} className="text-2xl" />
+                                </button>
+                            ))}
                         </div>
                     </div>
                 )}

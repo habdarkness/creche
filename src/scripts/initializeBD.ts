@@ -5,6 +5,17 @@ const prisma = new PrismaClient();
 
 async function main() {
     const passwordHash = await bcrypt.hash("123456", 10);
+    await prisma.user.create({
+        data: {
+            name: "administrador",
+            email: "administrador@email.com",
+            password: passwordHash,
+            token_password: passwordHash,
+            type: "Administrador",
+            phone: "98999999999",
+            level: 1
+        }
+    });
     // === Usuários (professores) ===
     const user1 = await prisma.user.create({
         data: {
@@ -13,7 +24,7 @@ async function main() {
             phone: "11999990001",
             password: passwordHash,
             token_password: passwordHash,
-            type: "teacher",
+            type: "Scretário",
             level: 2,
         },
     });
@@ -25,8 +36,8 @@ async function main() {
             phone: "11999990002",
             password: "123456",
             token_password: passwordHash,
-            type: "teacher",
-            level: 2,
+            type: "Professor",
+            level: 3,
         },
     });
 

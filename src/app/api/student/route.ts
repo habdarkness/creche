@@ -34,13 +34,12 @@ export async function POST(request: Request) {
 
             // Cria ou atualiza o estudante
             if (id == undefined) {
-                newStudent = await tx.student.create({ data: student });
+                newStudent = await tx.student.create({ data: { ...student, created_by: session.name } });
                 id = newStudent.id;
             } else {
                 newStudent = await tx.student.update({
                     where: { id: parseInt(id) },
                     data: student,
-
                 });
             }
 
@@ -88,6 +87,15 @@ export async function POST(request: Request) {
                 newAsset,
             };
         });
+
+        await prisma.action.create({
+            data: {
+                user_id: Number(session.id),
+                description: id
+                    ? `Atualizou a ficha do Estudante ${result.newStudent.name}`
+                    : `Criou a ficha do Estudante ${result.newStudent.name}`
+            }
+        })
         return NextResponse.json({
             message: id ? "Estudante atualizado" : "Estudante criado",
             student: {

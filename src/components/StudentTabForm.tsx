@@ -64,116 +64,118 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
     else if (session.user.level > 2) {
         tabs = ["Matrícula", "Saúde", "Responsáveis", "Endereço", "Registros"];
         if (!tabs.includes(tab)) { setTab(tabs[0]); }
-        <TabForm visible={visible} tabs={tabs} tab={tab} onTabChanged={setTab} onCancel={() => onVisibilityChanged(false)} >
-            {tab == "Informações" ? (
-                <>
-                    <FormInput id="name" label="Nome" icon={faFont} value={form.name} onChange={onChange} disabled />
-                    <FormInput
-                        id="birthday"
-                        type="date"
-                        label="Data de nascimento"
-                        icon={faCakeCandles}
-                        value={form.birthday ? prismaDate(form.birthday).toISOString().substring(0, 10) : ""}
-                        onChange={onChange}
-                        disabled
-                    />
-                    <FormInput id="gender" label="Sexo" icon={faVenusMars} value={form.gender} onChange={onChange} disabled />
-                    <FormInput
-                        id="color"
-                        label="Cor/Raça"
-                        icon={faPalette}
-                        options={studentColor}
-                        value={form.color}
-                        onChange={onChange}
-                        disabled
-                    />
-                    <div className="flex justify-center gap-2">
-                        <FormInput id="twins" label="Gêmeos" icon={faUser} value={form.twins} onChange={onChange} disabled />
-                        <FormInput id="has_siblings" label="Irmãos" icon={faUser} value={form.has_siblings} onChange={onChange} disabled />
-                    </div>
-                </>
-            ) : tab == "Saúde" ? (
-                <>
-                    <FormInput
-                        id="sus"
-                        label="SUS"
-                        icon={faUser}
-                        value={form.sus}
-                        onChange={onChange}
-                        disabled
-                    />
-                    <FormInput id="health_issues" label="Problemas de Saúde" icon={faNotesMedical} value={form.health_issues} onChange={onChange} disabled />
-                    <FormInput id="food_restriction" label="Restrição Alimentar" icon={faBowlFood} value={form.food_restriction} onChange={onChange} disabled />
-                    <FormInput id="allergy" label="Alergia" icon={faVirus} value={form.allergy} onChange={onChange} disabled />
-                    <FormInput id="mobility" label="Mobilidade Reduzida" options={studentMobility} icon={faWheelchair} value={form.mobility} onChange={onChange} disabled />
-                    <FormInput id="disabilities" label="Possui Deficiências Múltiplas" icon={faNotesMedical} value={form.disabilities} onChange={onChange} disabled />
-                    <FormInput id="special_needs" label="Criança Público Alvo de Educação Especial" icon={faNotesMedical} value={form.special_needs} onChange={onChange} disabled />
-                    <FormInput id="classification" label="Classificação" icon={faNotesMedical} options={studentClassifications} value={form.special_needs} onChange={onChange} disabled />
-                </>
-            ) : tab == "Responsáveis" ? (
-                <>
-                    <FormInput
-                        id="dad_id"
-                        label="Pai"
-                        icon={faUser}
-                        options={guardianOptions}
-                        search
-                        value={form.dad_id}
-                        onChange={onChange}
-                        disabled
-                    />
-                    <FormInput
-                        id="mom_id"
-                        label="Mãe"
-                        icon={faUser}
-                        options={guardianOptions}
-                        search
-                        value={form.mom_id}
-                        onChange={onChange}
-                        disabled
-                    />
-                    <FormInput
-                        id="guardian_id"
-                        label="Responsável"
-                        icon={faUser}
-                        options={guardianOptions}
-                        search
-                        value={form.guardian_id}
-                        onChange={onChange}
-                        disabled
-                    />
-                    <FormInput
-                        id="authorized"
-                        label="Pessoas autorizadas a retirar a criança da escola"
-                        icon={faUser}
-                        value={form.authorized}
-                        onChange={onChange}
-                        disabled
-                    />
-                </>
-            ) : tab == "Endereço" ? (
-                <>
-                    <div className="flex gap-2">
-                        <FormInput id="street" label="Rua" icon={faRoad} value={form.street} onChange={onChange} />
-                        <FormInput id="number" label="Número" icon={faHouse} value={form.number} onChange={onChange} />
-                        <FormInput id="neighborhood" label="Bairro" icon={faHouse} value={form.neighborhood} onChange={onChange} />
-                    </div>
-                    <div className="flex gap-2">
-                        <FormInput id="city" label="Município" icon={faCity} value={form.city} onChange={onChange} fullWidth />
-                        <FormInput id="state" label="UF" icon={faFlag} value={form.state} onChange={onChange} />
-                    </div>
-                    <FormInput id="reference" label="Pontos de Referência" icon={faHouse} value={form.reference} onChange={onChange} />
-                    <FormInput id="cep" label="CEP" icon={faHouse} value={form.cep} onChange={onChange} />
-                    <div className={divStyle}>
-                        <FormInput id="phone_home" label="Contato" icon={faPhone} value={form.phone_home} onChange={onChange} fullWidth />
-                        <FormInput id="phone_alt" label="Outro contato" icon={faPhone} value={form.phone_alt} onChange={onChange} fullWidth />
-                    </div>
-                </>
-            ) : (
-                <>
-                </>
-            )}
-        </TabForm>
+        return (
+            <TabForm visible={visible} tabs={tabs} tab={tab} onTabChanged={setTab} onCancel={() => onVisibilityChanged(false)} >
+                {tab == "Matrícula" ? (
+                    <>
+                        <FormInput id="name" label="Nome" icon={faFont} value={form.name} onChange={onChange} disabled />
+                        <FormInput
+                            id="birthday"
+                            type="date"
+                            label="Data de nascimento"
+                            icon={faCakeCandles}
+                            value={form.birthday ? prismaDate(form.birthday).toISOString().substring(0, 10) : ""}
+                            onChange={onChange}
+                            disabled
+                        />
+                        <FormInput id="gender" label="Sexo" icon={faVenusMars} value={form.gender} onChange={onChange} disabled />
+                        <FormInput
+                            id="color"
+                            label="Cor/Raça"
+                            icon={faPalette}
+                            options={studentColor}
+                            value={form.color}
+                            onChange={onChange}
+                            disabled
+                        />
+                        <div className="flex justify-center gap-2">
+                            <FormInput id="twins" label="Gêmeos" icon={faUser} value={form.twins} onChange={onChange} disabled />
+                            <FormInput id="has_siblings" label="Irmãos" icon={faUser} value={form.has_siblings} onChange={onChange} disabled />
+                        </div>
+                    </>
+                ) : tab == "Saúde" ? (
+                    <>
+                        <FormInput
+                            id="sus"
+                            label="SUS"
+                            icon={faUser}
+                            value={form.sus}
+                            onChange={onChange}
+                            disabled
+                        />
+                        <FormInput id="health_issues" label="Problemas de Saúde" icon={faNotesMedical} value={form.health_issues} onChange={onChange} disabled />
+                        <FormInput id="food_restriction" label="Restrição Alimentar" icon={faBowlFood} value={form.food_restriction} onChange={onChange} disabled />
+                        <FormInput id="allergy" label="Alergia" icon={faVirus} value={form.allergy} onChange={onChange} disabled />
+                        <FormInput id="mobility" label="Mobilidade Reduzida" options={studentMobility} icon={faWheelchair} value={form.mobility} onChange={onChange} disabled />
+                        <FormInput id="disabilities" label="Possui Deficiências Múltiplas" icon={faNotesMedical} value={form.disabilities} onChange={onChange} disabled />
+                        <FormInput id="special_needs" label="Criança Público Alvo de Educação Especial" icon={faNotesMedical} value={form.special_needs} onChange={onChange} disabled />
+                        <FormInput id="classification" label="Classificação" icon={faNotesMedical} options={studentClassifications} value={form.special_needs} onChange={onChange} disabled />
+                    </>
+                ) : tab == "Responsáveis" ? (
+                    <>
+                        <FormInput
+                            id="dad_id"
+                            label="Pai"
+                            icon={faUser}
+                            options={guardianOptions}
+                            search
+                            value={form.dad_id}
+                            onChange={onChange}
+                            disabled
+                        />
+                        <FormInput
+                            id="mom_id"
+                            label="Mãe"
+                            icon={faUser}
+                            options={guardianOptions}
+                            search
+                            value={form.mom_id}
+                            onChange={onChange}
+                            disabled
+                        />
+                        <FormInput
+                            id="guardian_id"
+                            label="Responsável"
+                            icon={faUser}
+                            options={guardianOptions}
+                            search
+                            value={form.guardian_id}
+                            onChange={onChange}
+                            disabled
+                        />
+                        <FormInput
+                            id="authorized"
+                            label="Pessoas autorizadas a retirar a criança da escola"
+                            icon={faUser}
+                            value={form.authorized}
+                            onChange={onChange}
+                            disabled
+                        />
+                    </>
+                ) : tab == "Endereço" ? (
+                    <>
+                        <div className="flex gap-2">
+                            <FormInput id="street" label="Rua" icon={faRoad} value={form.street} onChange={onChange} disabled />
+                            <FormInput id="number" label="Número" icon={faHouse} value={form.number} onChange={onChange} disabled />
+                            <FormInput id="neighborhood" label="Bairro" icon={faHouse} value={form.neighborhood} onChange={onChange} disabled />
+                        </div>
+                        <div className="flex gap-2">
+                            <FormInput id="city" label="Município" icon={faCity} value={form.city} onChange={onChange} fullWidth disabled />
+                            <FormInput id="state" label="UF" icon={faFlag} value={form.state} onChange={onChange} disabled />
+                        </div>
+                        <FormInput id="reference" label="Pontos de Referência" icon={faHouse} value={form.reference} onChange={onChange} disabled />
+                        <FormInput id="cep" label="CEP" icon={faHouse} value={form.cep} onChange={onChange} disabled />
+                        <div className={divStyle}>
+                            <FormInput id="phone_home" label="Contato" icon={faPhone} value={form.phone_home} onChange={onChange} fullWidth disabled />
+                            <FormInput id="phone_alt" label="Outro contato" icon={faPhone} value={form.phone_alt} onChange={onChange} fullWidth disabled />
+                        </div>
+                    </>
+                ) : (
+                    <>
+                    </>
+                )}
+            </TabForm>
+        )
     }
     if (!tabs.includes(tab)) { setTab(tabs[0]); }
     return (

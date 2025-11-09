@@ -21,10 +21,9 @@ type Props = {
 }
 
 export default function FormInput({
-    id, label = "", icon, fullWidth = false,
-    placeholder = "Digite " + label.toLowerCase() + "...",
-    type = "text", options, search = false,
-    value, onChange, disabled = false
+    id, label = "", icon, fullWidth = false, disabled = false,
+    placeholder = disabled ? `${label}` : `Digite ${label.toLowerCase()}...`,
+    type = "text", options, search = false, value, onChange
 }: Props) {
     const [searchText, setSearchText] = useState("");
     const objectValue = useMemo(() => {
@@ -52,8 +51,8 @@ export default function FormInput({
                 <div className="flex flex-col gap-2 text-white">
                     <label htmlFor={id} className="text-primary font-bold">{label}</label>
                     {objectValue.map((v, i) => (
-                        <div key={i} className="flex gap-2 items-center">
-                            <div className="grid grid-cols-[min-content_1fr] w-full bg-primary-darker p-2 rounded-md gap-2 items-center">
+                        <ul key={i} className="flex gap-2 items-center">
+                            <li className="grid grid-cols-[min-content_1fr] w-full bg-primary-darker p-2 rounded-md gap-2 items-center">
                                 {Object.entries(keys).map(([key, type]) => (
                                     <React.Fragment key={key}>
                                         <h1 className="text-nowrap">{capitalize(key)}</h1>
@@ -74,13 +73,13 @@ export default function FormInput({
                                                     onChange({ target: { id, value: objValue } } as any)
                                                 }
                                             }}
-                                            placeholder={`Digite ${key}...`}
+                                            placeholder={disabled ? `${key}` : `Digite ${key.toLowerCase()}...`}
                                             className="bg-white text-primary-darker p-1 rounded-sm w-full"
                                             readOnly={disabled}
                                         />
                                     </React.Fragment>
                                 ))}
-                            </div>
+                            </li>
                             {!disabled && Array.isArray(value) && value.length > 1 && (
                                 <FontAwesomeIcon
                                     icon={faTrash}
@@ -93,7 +92,7 @@ export default function FormInput({
                                     }}
                                 />
                             )}
-                        </div>
+                        </ul>
                     ))}
                     {!disabled && Array.isArray(value) && (
                         <button
@@ -118,7 +117,7 @@ export default function FormInput({
                     <div className="flex gap-1 bg-primary-darker text-white rounded-md p-2 w-full items-center">
                         {icon && (<FontAwesomeIcon icon={icon} />)}
                         {options ? (
-                            <div className={`grid ${search && "grid-cols-1 gap-2 md:grid-cols-[1fr_2fr]"} w-full`}>
+                            <div className={`grid ${!disabled && search && "grid-cols-1 gap-2 md:grid-cols-[1fr_2fr]"} w-full`}>
                                 {!disabled && search && (
                                     <input
                                         value={searchText}
@@ -136,13 +135,13 @@ export default function FormInput({
                                                 : value
                                     }
                                     onChange={onChange}
-                                    className={`w-full ${search ? "bg-primary p-2 rounded-sm " : "bg-transparent"}`}
+                                    className={`w-full ${!disabled && search ? "bg-primary p-2 rounded-sm " : "bg-transparent"}`}
                                     disabled={disabled}
                                 >
                                     {options.length > 0 && Array.isArray(options[0]) ? (
-                                        <option value={-1} className="text-white bg-primary-darker font-bold">Selecione uma opção</option>
+                                        <option value={-1} className="text-white bg-primary-darker font-bold">{disabled ? "Não seleciondo" : "Selecione uma opção"}</option>
                                     ) : (
-                                        <option value={`Selecione uma opção`} className="text-white bg-primary-darker font-bold">Selecione uma opção</option>
+                                        <option value={`Selecione uma opção`} className="text-white bg-primary-darker font-bold">{disabled ? "Não seleciondo" : "Selecione uma opção"}</option>
                                     )}
                                     {options.map((opt) => {
                                         if (Array.isArray(opt)) {

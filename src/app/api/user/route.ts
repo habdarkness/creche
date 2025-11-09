@@ -11,16 +11,20 @@ export async function GET(request: Request) {
     if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
-    if (session.level > 1 && id != session.id) { return NextResponse.json({ error: "Não Autorizado" }, { status: 401 }); }
+    if (session.level > 2 && id != session.id) { return NextResponse.json({ error: "Não Autorizado" }, { status: 401 }); }
 
     let users;
     if (id) {
-        const user = await prisma.user.findUnique({ where: { id: Number(id) } });
+        const user = await prisma.user.findUnique({
+            where: { id: Number(id), level: { gt: session.level } },
+            include: { actions: true }
+        });
         users = user ? [user] : [];
     } else {
         users = await prisma.user.findMany({
-            where: { level: { gte: session.level } },
-            orderBy: { name: "asc" }
+            where: { level: { gt: session.level } },
+            orderBy: { name: "asc" },
+            include: { actions: true }
         });
     }
 
@@ -33,8 +37,8 @@ export async function POST(request: Request) {
     if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
     const data = await request.json();
     const { id, name, email, phone, password, token_password, level, type } = data;
-    if (session.level > 1 && id != session.id) { return NextResponse.json({ error: "Não Autorizado" }, { status: 401 }); }
-    if (level && level <= session.level && session.id != id) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
+    if (session.level > 2 && id != session.id) { return NextResponse.json({ error: "Não Autorizado" }, { status: 401 }); }
+    if (level && level <= session.level && id != session.id) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
     try {
         let user;
         if (id) {
@@ -57,15 +61,30 @@ export async function POST(request: Request) {
                                 ? { password: hashedPassword, token_password: hashedPassword }
                                 : {}
                     )
-                }
+                },
+                include: { actions: true }
             });
+            if (!password) {
+                await prisma.action.create({
+                    data: {
+                        user_id: Number(session.id),
+                        description: `Atualizou a ficha do Usuário ${name} (${type})`
+                    }
+                })
+            }
         }
         else {
             if (!name || !email || !level || !type || !phone) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
             const hashedPassword = await bcrypt.hash(generateToken(), 10);
-            user = await prisma.user.create({ data: { name, email, phone, level, type, password: hashedPassword, token_password: hashedPassword } });
+            user = await prisma.user.create({ data: { name, email, phone, level, type, password: hashedPassword, token_password: hashedPassword, created_by: session.name } });
+            await prisma.action.create({
+                data: {
+                    user_id: Number(session.id),
+                    description: `Criou a ficha do Usuário ${name} (${type})`
+                }
+            })
         };
-        return NextResponse.json({ message: id ? "Usuário atualizado" : "Usuário criado", user, });
+        return NextResponse.json({ message: id ? "Usuário atualizado" : "Usuário criado", user });
     }
     catch (error) { return NextResponse.json({ error: "Erro ao salvar usuário" }, { status: 500 }); }
 }

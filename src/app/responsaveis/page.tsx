@@ -1,5 +1,6 @@
 "use client";
 
+import Card from "@/components/Card";
 import { useSearch } from "@/components/Contexts";
 import FormInput from "@/components/FormInput";
 import Loader from "@/components/Loader";
@@ -62,11 +63,10 @@ export default function Guardians() {
             const data = await res.json();
             if (!res.ok) throw data.error;
             setGuardians(prev => {
-                const index = prev.findIndex(u => u.id === data.guardian.id);
+                const index = prev.findIndex(g => g.id === data.guardian.id);
                 if (index !== -1) {
-                    const newGuardians = [...prev];
-                    newGuardians[index] = data.guardian;
-                    return newGuardians;
+                    prev[index] = data.guardian;
+                    return prev;
                 }
                 else {
                     return [...prev, data.guardian];
@@ -78,7 +78,6 @@ export default function Guardians() {
                 icon: "success"
             });
             setForm(new GuardianForm());
-            setFormVisible(false);
         }
         catch (error) {
             return Swal.fire({
@@ -112,31 +111,34 @@ export default function Guardians() {
             const res = await fetch("/api/student", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form.getData())
+                body: JSON.stringify(studentForm.getData())
             })
             const data = await res.json();
             if (!res.ok) throw data.error;
             setGuardians(prev => {
+                const dad_index = prev.findIndex(g => g.id === data.student.dad_id);
+                if (dad_index != -1) {
+                    const index = prev[dad_index].dad_of.findIndex(s => s.id == data.student.id);
+                    if (index != -1) { prev[dad_index].dad_of[index] = data.student }
+                }
+                const mom_index = prev.findIndex(g => g.id === data.student.mom_id);
+                if (mom_index != -1) {
+                    const index = prev[mom_index].dad_of.findIndex(s => s.id == data.student.id);
+                    if (index != -1) { prev[mom_index].dad_of[index] = data.student }
+                }
+                const guardian_index = prev.findIndex(g => g.id === data.student.guardian_id);
+                if (guardian_index != -1) {
+                    const index = prev[guardian_index].dad_of.findIndex(s => s.id == data.student.id);
+                    if (index != -1) { prev[guardian_index].dad_of[index] = data.student }
+                }
                 return [...prev]
             });
-            // setStudents(prev => {
-            //     const index = prev.findIndex(u => u.id === data.student.id);
-            //     if (index !== -1) {
-            //         const newStudents = [...prev];
-            //         newStudents[index] = data.student;
-            //         return newStudents;
-            //     }
-            //     else {
-            //         return [...prev, data.student];
-            //     }
-            // });
 
             Swal.fire({
                 title: `Estudante ${form.id == -1 ? "cadastrado" : "atualizado"} com sucesso!`,
                 icon: "success"
             });
             setStudentForm(new StudentForm());
-            setStudentFormVisible(false);
         }
         catch (error) {
             return Swal.fire({
@@ -158,7 +160,7 @@ export default function Guardians() {
             <h1 className="text-2xl font-bold mb-4">Responsáveis</h1>
             <ul className=" grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 w-full gap-4">
                 {filtered.map(guardian => (
-                    <li key={guardian.id} className="flex flex-col  bg-primary-darker text-white p-2 rounded-2xl hover:scale-105 transition" onClick={() => {
+                    <Card key={guardian.id} pressable onClick={() => {
                         setForm(new GuardianForm({ ...guardian }));
                         setFormVisible(true);
                     }}>
@@ -171,7 +173,7 @@ export default function Guardians() {
                             <p className="text-sm">Telefone: {guardian.phone}</p>
                         </div>
                         <p className="text-sm">Alunos vinculados: {getStudents(guardian)}</p>
-                    </li>
+                    </Card>
                 ))}
             </ul>
             <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit} submit={form.id == -1 ? "Cadastrar" : "Atualizar"} >
@@ -194,7 +196,7 @@ export default function Guardians() {
                     <p className="text-center text-primary font-bold mb-2">Estudantes vinculados</p>
                     <ul className="grid grid-cols-2 md:grid-cols-3 w-full gap-4">
                         {form.getStudents().map(student => (
-                            <li key={student.id} className={`flex flex-col  bg-primary-darker text-white p-2 rounded-2xl hover:bg-primary transition ${student.status != "Matriculado" && "opacity-75"}`} onClick={() => {
+                            <Card key={student.id} pressable disabled={student.status != "Matriculado"} onClick={() => {
                                 const clean = cleanObject(student)
                                 setStudentForm(new StudentForm({
                                     ...clean,
@@ -218,7 +220,7 @@ export default function Guardians() {
                                         return `${age} anos`;
                                     })()}
                                 </p>
-                            </li>
+                            </Card>
                         ))}
                     </ul>
                 </div>
