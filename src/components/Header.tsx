@@ -62,7 +62,7 @@ export default function Header() {
             <div className="flex flex-row items-center gap-4 w-full">
                 <div className="flex gap-4 w-full items-center">
                     <Image
-                        src="/icon.png"
+                        src="/favicon.png"
                         alt="Logo da Creche Estrela"
                         width={64}
                         height={64}
