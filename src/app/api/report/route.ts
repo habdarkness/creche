@@ -36,6 +36,7 @@ export async function POST(request: Request) {
         await prisma.action.create({
             data: {
                 user_id: session.id,
+                user_name: session.name,
                 description: data.id
                     ? `Atualizou o relatório do dia ${day} sobre o estudante ${report.student?.name}`
                     : `Criou o relatório do dia ${day} sobre o estudante ${report.student?.name}`
@@ -59,6 +60,7 @@ export async function DELETE(request: Request) {
         await prisma.action.create({
             data: {
                 user_id: session.id,
+                user_name: session.name,
                 description: `Deletou o relatório do dia ${day} sobre o estudante ${report.student?.name}`
             }
         })

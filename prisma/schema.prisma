@@ -82,7 +82,7 @@ model Student {
     family     Json?
     authorized Json?
 
-    gov_aid    String?
+    gov_aid    Boolean @default(false)
     nis_number String?
 
     address  Address?
@@ -133,35 +133,35 @@ model Housing {
     floor_type    String?
     building_type String?
     roof_type     String?
-    septic_tank   Boolean?
-    cifon         Boolean?
-    electricity   Boolean?
-    water         Boolean?
+    septic_tank   Boolean  @default(false)
+    cifon         Boolean  @default(false)
+    electricity   Boolean  @default(false)
+    water         Boolean  @default(false)
     student_id    Int?     @unique
     student       Student? @relation(fields: [student_id], references: [id], onDelete: Cascade)
 }
 
 model Assets {
     id              Int      @id @default(autoincrement())
-    tv              Boolean? @default(false)
-    dvd             Boolean? @default(false)
-    radio           Boolean? @default(false)
-    computer        Boolean? @default(false)
-    notebook        Boolean? @default(false)
-    phone_fixed     Boolean? @default(false)
-    phone_mobile    Boolean? @default(false)
-    tablet          Boolean? @default(false)
-    internet        Boolean? @default(false)
-    cable_tv        Boolean? @default(false)
-    stove           Boolean? @default(false)
-    fridge          Boolean? @default(false)
-    freezer         Boolean? @default(false)
-    microwave       Boolean? @default(false)
-    washing_machine Boolean? @default(false)
-    air_conditioner Boolean? @default(false)
-    bicycle         Boolean? @default(false)
-    motorcycle      Boolean? @default(false)
-    car             Boolean? @default(false)
+    tv              Boolean  @default(false)
+    dvd             Boolean  @default(false)
+    radio           Boolean  @default(false)
+    computer        Boolean  @default(false)
+    notebook        Boolean  @default(false)
+    phone_fixed     Boolean  @default(false)
+    phone_mobile    Boolean  @default(false)
+    tablet          Boolean  @default(false)
+    internet        Boolean  @default(false)
+    cable_tv        Boolean  @default(false)
+    stove           Boolean  @default(false)
+    fridge          Boolean  @default(false)
+    freezer         Boolean  @default(false)
+    microwave       Boolean  @default(false)
+    washing_machine Boolean  @default(false)
+    air_conditioner Boolean  @default(false)
+    bicycle         Boolean  @default(false)
+    motorcycle      Boolean  @default(false)
+    car             Boolean  @default(false)
     student_id      Int?     @unique
     student         Student? @relation(fields: [student_id], references: [id], onDelete: Cascade)
 }
@@ -199,10 +199,10 @@ model Report {
 }
 
 model Action {
-    id Int @id @default(autoincrement())
-
+    id          Int      @id @default(autoincrement())
     user_id     Int?
     user        User?    @relation(fields: [user_id], references: [id])
+    user_name   String?
     description String
     created_at  DateTime @default(now())
 }

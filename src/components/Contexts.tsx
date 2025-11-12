@@ -1,5 +1,7 @@
 import { createContext, useContext, useState } from "react";
-type Filter = { key: string, value: any }
+import { FormInputValues } from "./FormInput";
+
+export type Filter = { key: string, value: FormInputValues }
 type SearchContextType = {
     search: string;
     setSearch: (s: string) => void;

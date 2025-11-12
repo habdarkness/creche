@@ -28,6 +28,7 @@ export async function POST(request: Request) {
         await prisma.action.create({
             data: {
                 user_id: session.id,
+                user_name: session.name,
                 description: data.id
                     ? `Atualizou a turma ${students_class.grade} ${students_class.year}`
                     : `Criou a turma ${students_class.grade} ${students_class.year}`
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
 }
 export async function DELETE(request: Request) {
     const session = await VerifyUser();
-    if (!session || session.level > 1) { return NextResponse.json({ error: "Não autorizado" }, { status: 401 }); }
+    if (!session || session.level > 2) { return NextResponse.json({ error: "Não autorizado" }, { status: 401 }); }
 
 
     const { id } = await request.json();
@@ -50,6 +51,7 @@ export async function DELETE(request: Request) {
         await prisma.action.create({
             data: {
                 user_id: session.id,
+                user_name: session.name,
                 description: `Deletou a turma (grade: ${students_class.grade} ano: ${students_class.year})`
             }
         })

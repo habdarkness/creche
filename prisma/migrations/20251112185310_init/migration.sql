@@ -42,8 +42,6 @@ CREATE TABLE "public"."Student" (
     "color" TEXT NOT NULL,
     "twins" BOOLEAN NOT NULL DEFAULT false,
     "has_siblings" BOOLEAN NOT NULL DEFAULT false,
-    "school_year" TEXT,
-    "school_grade" TEXT,
     "class_id" INTEGER,
     "sus" JSONB NOT NULL,
     "health_issues" TEXT,
@@ -147,7 +145,8 @@ CREATE TABLE "public"."Assets" (
 -- CreateTable
 CREATE TABLE "public"."Class" (
     "id" SERIAL NOT NULL,
-    "name" TEXT,
+    "year" TEXT,
+    "grade" TEXT,
     "professor_id" INTEGER,
     "created_by" TEXT NOT NULL DEFAULT '',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -161,7 +160,7 @@ CREATE TABLE "public"."Report" (
     "title" TEXT,
     "description" TEXT,
     "date" TIMESTAMP(3) NOT NULL,
-    "file_path" JSONB,
+    "file" JSONB,
     "professor_id" INTEGER,
     "student_id" INTEGER,
     "created_by" TEXT NOT NULL DEFAULT '',
@@ -174,6 +173,7 @@ CREATE TABLE "public"."Report" (
 CREATE TABLE "public"."Action" (
     "id" SERIAL NOT NULL,
     "user_id" INTEGER,
+    "user_name" TEXT,
     "description" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -220,16 +220,16 @@ ALTER TABLE "public"."Student" ADD CONSTRAINT "Student_mom_id_fkey" FOREIGN KEY 
 ALTER TABLE "public"."Student" ADD CONSTRAINT "Student_guardian_id_fkey" FOREIGN KEY ("guardian_id") REFERENCES "public"."Guardian"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Address" ADD CONSTRAINT "Address_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "public"."Student"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."Address" ADD CONSTRAINT "Address_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "public"."Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Documents" ADD CONSTRAINT "Documents_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "public"."Student"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."Documents" ADD CONSTRAINT "Documents_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "public"."Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Housing" ADD CONSTRAINT "Housing_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "public"."Student"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."Housing" ADD CONSTRAINT "Housing_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "public"."Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Assets" ADD CONSTRAINT "Assets_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "public"."Student"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."Assets" ADD CONSTRAINT "Assets_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "public"."Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Class" ADD CONSTRAINT "Class_professor_id_fkey" FOREIGN KEY ("professor_id") REFERENCES "public"."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

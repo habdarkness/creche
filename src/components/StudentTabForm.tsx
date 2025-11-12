@@ -15,6 +15,7 @@ import { ReportForm } from "@/models/ReportForm";
 import Loader from "./Loader";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { id } from "zod/locales";
+import { downloadBase64 } from "@/lib/dowload";
 
 type Props = {
     form: StudentForm;
@@ -133,41 +134,37 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
         })
     }
     async function handlePrint() {
-        setWord(true);
-        //if (onSubmit && form.id != -1) { await onSubmit(new Event("submit") as unknown as FormEvent<Element>); }
-        const res = await fetch("/api/export-student", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: form.id }),
-        });
+        if (word) { return }
+        try {
+            setWord(true);
+            const res = await fetch("/api/export-student", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: form.id }),
+            });
 
-        if (!res.ok) {
-            Swal.fire({
-                title: "Erro ao gerar documento",
-                icon: "error"
-            })
-            setWord(false);
-            return;
+            if (!res.ok) {
+                Swal.fire({
+                    title: "Erro ao gerar documento",
+                    icon: "error"
+                })
+                setWord(false);
+                return;
+            }
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Ficha_${form.name}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
         }
-
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `Ficha_${form.name}.docx`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-        setWord(false);
+        catch (error) { console.log(error) }
+        finally { setWord(false); }
     };
-    function downloadBase64(base64: string, filename: string) {
-        const link = document.createElement("a");
-        link.href = base64;
-        link.download = filename;
-        link.click();
-    }
-
     const ReportTab = (
         <div className="flex flex-col w-full justify-center gap-2">
             <ul className="flex flex-col gap-2 p-2 rounded-lg bg-background-darker">
@@ -189,29 +186,27 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
                         </div>
                         <FontAwesomeIcon
                             icon={faPen}
-                            className="text-primary-darker text-xl hover:text-primary transition"
+                            className="text-primary text-xl hover:scale-125 transition"
                             onClick={() => {
                                 setReportForm(new ReportForm(cleanObject(report)));
                                 setReportVisible(true);
                             }}
                         />
-                        <FontAwesomeIcon
-                            icon={faTrash}
-                            className="text-primary-darker text-xl hover:text-red-500 transition"
-                            onClick={() => handleDeleteReport(report)}
-                        />
                         {(() => {
                             const file = report.file as { base64: string; name: string } | null;
-
                             return file?.base64 ? (
                                 <FontAwesomeIcon
                                     icon={faFileDownload}
-                                    className="text-primary-darker text-xl hover:text-primary transition"
+                                    className="text-primary-darker text-xl hover:scale-125 transition"
                                     onClick={() => downloadBase64(file.base64, file.name)}
                                 />
                             ) : null;
                         })()}
-
+                        <FontAwesomeIcon
+                            icon={faTrash}
+                            className="text-red-400 text-xl hover:scale-125 transition"
+                            onClick={() => handleDeleteReport(report)}
+                        />
                     </li>
                 ))}
             </ul>
@@ -533,7 +528,7 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
                     </>
                 ) : tab == "Casa" ? (
                     <>
-                        <FormInput id="type" label="Casa" icon={faHouse} options={studentHouses} value={form.type} onChange={onChange} />
+                        <FormInput id="type" label="Moradia" icon={faHouse} options={studentHouses} value={form.type} onChange={onChange} />
                         <FormInput id="rent_value" label="Valor do Aluguel" icon={faMoneyBill} type="number" value={form.rent_value} onChange={onChange} />
                         <FormInput id="rooms" label="Nº de Comodos" icon={faHouse} type="number" value={form.rooms} onChange={onChange} />
                         <div className={divStyle}>

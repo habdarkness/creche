@@ -11,8 +11,9 @@ import PageMenu from "@/components/PageMenu";
 import StudentTabForm from "@/components/StudentTabForm";
 import TabForm from "@/components/TabForm";
 import { capitalize, cleanObject, formatPhone, formatRG, getAge } from "@/lib/format";
+import matches from "@/lib/matches";
 import { prismaDate } from "@/lib/prismaLib";
-import { GuardianForm } from "@/models/GuardianForm";
+import { GuardianForm, kinshipTypes } from "@/models/GuardianForm";
 import { StudentForm } from "@/models/StudentForm";
 import { GuardianWithRelations, StudentWithRelations } from "@/types/prismaTypes";
 import { faEnvelope, faSave, faTrash, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -21,6 +22,7 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 export default function Guardians() {
+    const { filters, search } = useSearch();
     const [students, setStudents] = useState<StudentWithRelations[]>([]);
     const [guardians, setGuardians] = useState<GuardianWithRelations[]>([]);
     const [loading, setLoading] = useState(true);
@@ -28,7 +30,6 @@ export default function Guardians() {
     const [form, setForm] = useState<GuardianForm>(new GuardianForm());
     const [studentFormVisible, setStudentFormVisible] = useState(false);
     const [studentForm, setStudentForm] = useState<StudentForm>(new StudentForm())
-    const { search } = useSearch();
 
     async function fetchAll() {
         try {
@@ -156,7 +157,7 @@ export default function Guardians() {
             icon: "error"
         });
         try {
-            const res = await fetch("/api/guardian", {
+            const res = await fetch("/api/student", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(studentForm.getData())
@@ -217,9 +218,8 @@ export default function Guardians() {
     }
     const filtered = guardians.filter(guardian => {
         if (!guardian) return false;
-        const term = search.toLowerCase();
-        const userTerm = (guardian.name).toLowerCase();
-        return userTerm.includes(term);
+        const of = new GuardianForm(cleanObject(guardian)).getFiltered();
+        return matches(of, search, filters);
     })
     return (
         <PageLayout title="Responsáveis" loading={loading}>
@@ -257,13 +257,13 @@ export default function Guardians() {
                 />
                 <FormInput id="rg" label="RG" icon={faUser} value={form.rg} onChange={handleChange} />
                 <FormInput id="cpf" label="CPF" icon={faUser} value={form.cpf} onChange={handleChange} />
-                <FormInput id="kinship" label="Parentesco" icon={faUser} value={form.kinship} onChange={handleChange} />
+                <FormInput id="kinship" label="Parentesco" icon={faUser} options={kinshipTypes} value={form.kinship} onChange={handleChange} />
                 <FormInput id="phone" label="Telefone" icon={faUser} value={form.phone} onChange={handleChange} />
                 <FormInput id="workplace" label="Local de Trabalho" icon={faUser} value={form.workplace} onChange={handleChange} />
                 <FormInput id="other_phone" label="Outro Telefone" icon={faUser} value={form.other_phone} onChange={handleChange} />
-                <div className="bg-background-darker p-2 rounded-3xl">
+                <div className="bg-background-darker p-2 rounded-xl">
                     <p className="text-center text-primary font-bold mb-2">Estudantes vinculados</p>
-                    <CardList>
+                    <CardList columns={3}>
                         {form.getStudents().map(guardian_student => {
                             const student = students.find(s => s.id == guardian_student.id);
                             if (!student) return;

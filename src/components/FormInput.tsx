@@ -6,16 +6,17 @@ import Switch from "./Switch";
 import { capitalize } from "@/lib/format";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import FileInput from "./FileInput";
-
+export type FormInputType = "text" | "textarea" | "password" | "date" | "number" | "time" | "file"
+export type FormInputValues = string | number | boolean | Record<string, any> | Record<string, any>[]
 type Props = {
     id: string;
     label?: string;
     placeholder?: string;
     icon?: IconProp;
-    type?: "text" | "textarea" | "password" | "date" | "number" | "time" | "file";
+    type?: FormInputType;
     options?: [number, string][] | string[];
     search?: boolean;
-    value: string | number | boolean | Record<string, any> | Record<string, any>[];
+    value: FormInputValues;
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     fullWidth?: boolean;
     disabled?: boolean;
@@ -86,7 +87,7 @@ export default function FormInput({
                             {!disabled && Array.isArray(value) && value.length > 1 && (
                                 <FontAwesomeIcon
                                     icon={faTrash}
-                                    className="text-primary-darker text-xl hover:text-red-500 transition"
+                                    className="text-red-400 text-xl hover:scale-125 transition"
                                     onClick={() => {
                                         if (Array.isArray(value)) {
                                             const newValue = value.filter((_, index) => index !== i);
@@ -201,4 +202,4 @@ export default function FormInput({
         </div >
     )
 }
-const option = "text-white bg-primary-darker font-bold"
+const option = "text-white bg-primary font-bold"

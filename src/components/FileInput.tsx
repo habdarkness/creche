@@ -1,4 +1,5 @@
 "use client";
+import { downloadBase64 } from "@/lib/dowload";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -55,14 +56,6 @@ export default function FileInput({ id, icon, label = "Arquivo", disabled = fals
             }
         } as any);
     }
-
-    function downloadBase64(base64: string, originalName: string) {
-        const link = document.createElement("a");
-        link.href = base64;
-        link.download = originalName;
-        link.click();
-    }
-
     function onDrop(e: DragEvent<HTMLDivElement>) {
         e.preventDefault();
         if (disabled) return;

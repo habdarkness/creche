@@ -1,7 +1,12 @@
 import { formatCPF, formatPhone, formatRG } from "@/lib/format";
+import { ObjectFilters } from "@/lib/matches";
 import { Student } from "@prisma/client";
 import { z } from "zod";
 
+export const kinshipTypes = [
+    "Não declarado", "Mãe", "Pai", "Avó", "Avô", "Tia", "Tio", "Irmã", "Irmão",
+    "Padrasto", "Madrasta", "Tutor legal", "Guardião", "Responsável legal", "Outro"
+]
 
 export class GuardianForm {
     id = -1;
@@ -9,7 +14,7 @@ export class GuardianForm {
     birthday: Date | null = null;
     rg = "";
     cpf = "";
-    kinship = "";
+    kinship = kinshipTypes[0];
     phone = "";
     workplace = "";
     other_phone = "";
@@ -46,6 +51,12 @@ export class GuardianForm {
             workplace: this.workplace,
             other_phone: this.other_phone,
         }
+    }
+    getFiltered(): ObjectFilters {
+        return {
+            term: `${this.name.toLowerCase()} ${this.rg} ${this.cpf}`,
+            kinship: this.kinship
+        };
     }
     verify() {
         const result = schema.safeParse(this.getData());

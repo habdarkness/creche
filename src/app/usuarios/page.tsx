@@ -12,6 +12,7 @@ import PageMenu from "@/components/PageMenu";
 import TabForm from "@/components/TabForm";
 import { capitalize, cleanObject } from "@/lib/format";
 import { generateToken } from "@/lib/generateToken";
+import matches from "@/lib/matches";
 import { prismaDate } from "@/lib/prismaLib";
 import { UserForm, userTypes } from "@/models/UserForm";
 import { faBriefcase, faEnvelope, faKey, faTrash, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -21,16 +22,16 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 export default function Users() {
+    const { data: session } = useSession();
+    const { filters, search } = useSearch();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [formVisible, setFormVisible] = useState(false);
     const [form, setForm] = useState<UserForm>(new UserForm({ token_password: generateToken() }));
-    const { search } = useSearch();
-    const { data: session } = useSession();
 
     async function fetchUsers() {
         try {
-            setLoading(true);
+            if (!formVisible) setLoading(true);
             const res = await fetch("/api/user");
             const data = await res.json();
             if (res.ok) {
@@ -132,17 +133,14 @@ export default function Users() {
             }
         });
     }
-
-    if (loading) return (<div className="flex items-center justify-center h-full"><Loader /></div>)
-    const filteredUsers = users.filter(user => {
-        const term = search.toLowerCase();
-        const userTerm = (user.name).toLowerCase();
-        return userTerm.includes(term);
+    const filtered = users.filter(user => {
+        const of = new UserForm(cleanObject(user)).getFiltered();
+        return matches(of, search, filters);
     });
     return (
         <PageLayout title="Usuários" loading={loading}>
             <CardList>
-                {filteredUsers.map(user => (
+                {filtered.map(user => (
                     <Card key={user.id} pressable onClick={() => {
                         setForm(new UserForm({ ...user, send_token: false }));
                         setFormVisible(true);
@@ -161,8 +159,8 @@ export default function Users() {
                 <FormInput id="email" label="Email" icon={faEnvelope} value={form.email} onChange={handleChange} />
                 <FormInput
                     id="type"
-                    options={Object.keys(userTypes)}
-                    label="Nível de acesso"
+                    options={session ? Object.entries(userTypes).filter(([_, level]) => level > session.user.level).map(([role]) => role) : []}
+                    label="Tipo"
                     icon={faBriefcase}
                     value={form.type}
                     onChange={handleChange}

@@ -68,7 +68,8 @@ export function formatDate(value?: Date | string | null): string {
     const year = String(date.getFullYear()).slice(-2);
     return `${day}/${month}/${year}`;
 }
-export function getAge(birthday: Date) {
+export function getAge(birthday: Date | null) {
+    if (!birthday) return 0;
     const today = new Date();
     const birth = prismaDate(birthday) || new Date();
     let age = today.getFullYear() - birth.getFullYear();

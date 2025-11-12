@@ -1,5 +1,5 @@
-import { formatCPF, formatCurrency, formatPhone, formatRG, parseID } from "@/lib/format";
-import { prismaDate } from "@/lib/prismaLib";
+import { formatCPF, formatCurrency, formatPhone, formatRG, getAge, parseID } from "@/lib/format";
+import { ObjectFilters } from "@/lib/matches";
 import { Class, Guardian } from "@prisma/client";
 import { z } from "zod";
 //npm install docxtemplater pizzip
@@ -43,7 +43,7 @@ export class StudentForm {
     special_needs = "";
     classification = studentClassifications[0];
     //auxílios sociais
-    gov_aid = "";
+    gov_aid = false;
     nis_number = "";
     //
     dad_id = -1;
@@ -128,19 +128,8 @@ export class StudentForm {
         }
     }
 
-    getAge() {
-        const today = new Date();
-        const birth = this.birthday || new Date();
-        let age = today.getFullYear() - birth.getFullYear();
-        const m = today.getMonth() - birth.getMonth();
-
-        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-            age--;
-        }
-        return age;
-    }
     getAgeGroup() {
-        const age = this.getAge();
+        const age = getAge(this.birthday);
         if (age <= 1) return "0–1 anos";
         if (age <= 3) return "2–3 anos";
         if (age <= 5) return "4–5 anos";
@@ -170,8 +159,19 @@ export class StudentForm {
         if (perCapta <= 800) return "400–800";
         return "Acima de 800";
     }
-
-
+    getFiltered(): ObjectFilters {
+        return {
+            term: this.name.toLowerCase(),
+            status: this.status,
+            age_group: this.getAgeGroup(),
+            gender: this.gender,
+            color: this.color,
+            has_siblings: this.has_siblings,
+            twins: this.twins,
+            mobility: this.mobility,
+            classification: this.classification,
+        };
+    }
     getDocxData() {
         const form = this.getData();
 

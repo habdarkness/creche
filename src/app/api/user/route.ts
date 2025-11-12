@@ -68,6 +68,7 @@ export async function POST(request: Request) {
                 await prisma.action.create({
                     data: {
                         user_id: session.id,
+                        user_name: session.name,
                         description: `Atualizou o Usuário ${name} (${type})`
                     }
                 })
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
             await prisma.action.create({
                 data: {
                     user_id: session.id,
+                    user_name: session.name,
                     description: `Criou o Usuário ${name} (${type})`
                 }
             })
@@ -102,6 +104,7 @@ export async function DELETE(request: Request) {
         await prisma.action.create({
             data: {
                 user_id: session.id,
+                user_name: session.name,
                 description: `Deletou o usuário ${user.name} (tipo: ${user.type}, level: ${user.level})`
             }
         })

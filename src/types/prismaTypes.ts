@@ -19,9 +19,9 @@ export type GuardianWithRelations = Guardian & {
     guardian_of: Student[];
 }
 export type ActionWithRelations = Action & {
-    user: User
+    user: User | null;
 }
 export type ClassWithRelations = Class & {
-    professor: User;
-    students: Student;
+    professor: User | null;
+    students: Student[];
 }

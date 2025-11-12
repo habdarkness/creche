@@ -29,7 +29,6 @@ export async function POST(request: Request) {
         }
 
         const data = format(student as StudentWithRelations | null);
-        console.log(data);
         const templatePath = path.join(process.cwd(), "public", "student_model.docx");
         const content = fs.readFileSync(templatePath, "binary");
         const zip = new PizZip(content);

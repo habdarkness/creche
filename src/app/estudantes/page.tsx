@@ -2,7 +2,7 @@
 
 import { capitalize, cleanObject, getAge } from "@/lib/format";
 import { ClassWithRelations, GuardianWithRelations, StudentWithRelations, UserWithRelations } from "@/types/prismaTypes";
-import { faGraduationCap, faPen, faSave, faTrash, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faFileExcel, faGraduationCap, faPen, faSave, faTrash, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { StudentForm } from "../../models/StudentForm";
@@ -17,14 +17,14 @@ import PageLayout from "@/components/PageLayout";
 import { ClassForm } from "@/models/ClassForm";
 import TabForm from "@/components/TabForm";
 import FormInput from "@/components/FormInput";
-import { id } from "zod/locales";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import FormButtonGroup from "@/components/FormButtonGroup";
 import FormButton from "@/components/FormButton";
+import matches from "@/lib/matches";
 
 export default function Students() {
     const { data: session, status } = useSession();
-    const { search } = useSearch();
+    const { filters, search } = useSearch();
     const [students, setStudents] = useState<StudentWithRelations[]>([]);
     const [guardians, setGuardians] = useState<GuardianWithRelations[]>([]);
     const [classes, setClasses] = useState<ClassWithRelations[]>([]);
@@ -33,6 +33,7 @@ export default function Students() {
     const [formIndex, setFormIndex] = useState(-1);
     const [form, setForm] = useState<StudentForm>(new StudentForm());
     const [classForm, setClassForm] = useState<ClassForm>(new ClassForm());
+    const [exporting, setExporting] = useState(false);
 
     async function fetchAll() {
         try {
@@ -157,6 +158,39 @@ export default function Students() {
             }
         });
     }
+    async function handleExport(ids: number[]) {
+        if (exporting) { return }
+        try {
+            setExporting(true);
+            const res = await fetch("/api/export", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ids })
+            })
+            if (!res.ok) throw (await res.json()).error;
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `dados.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            Swal.fire({
+                title: "Dados exportados com sucesso",
+                icon: "success"
+            });
+        }
+        catch (error) {
+            return Swal.fire({
+                title: "Erro ao exportar",
+                text: String(error),
+                icon: "error"
+            });
+        }
+        finally { setExporting(false); }
+    }
     async function handleSubmitClass(event: React.FormEvent) {
         event.preventDefault();
         const message = classForm.verify()
@@ -171,6 +205,7 @@ export default function Students() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(classForm.getData())
             })
+            if (classForm.id > -1) setFormIndex(-1);
             const data = await res.json();
             if (!res.ok) throw data.error;
             fetchAll();
@@ -190,7 +225,7 @@ export default function Students() {
     async function handleDeleteClass(id: number) {
         const studentClass = classes.find(c => c.id == id);
         Swal.fire({
-            title: `Tem certeza que deseja deletar a turma ${studentClass && `grade: ${studentClass.grade} ano ${studentClass.year})`}`,
+            title: `Tem certeza que deseja deletar a turma ${studentClass && `grade: ${studentClass.grade} ano ${studentClass.year}`}`,
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "Sim",
@@ -221,10 +256,16 @@ export default function Students() {
         });
     }
     const filtered = students.filter(student => {
-        const term = search.toLowerCase();
-        const userTerm = (student.name).toLowerCase();
-        return userTerm.includes(term);
+        const clean = cleanObject(student)
+        return matches(new StudentForm({
+            ...clean.address,
+            ...clean.housing,
+            ...clean.asset,
+            ...clean.document,
+            ...clean,
+        }).getFiltered(), search, filters);
     });
+
     const organized = filtered.reduce((acc, student) => {
         const class_id = student.class_id ?? -1;
         if (!acc[class_id]) {
@@ -250,11 +291,11 @@ export default function Students() {
                             ) : (
                                 <p className="flex w-full justify-center text-center">Sem turma</p>
                             )}
-                            {c && (
+                            {session && session.user.id < 2 && c && (
                                 <>
                                     <FontAwesomeIcon
                                         icon={faPen}
-                                        className="text-primary-darker hover:text-primary transition"
+                                        className="text-primary hover:scale-125 transition"
                                         onClick={() => {
                                             setClassForm(new ClassForm(cleanObject(c)));
                                             setFormIndex(1);
@@ -262,8 +303,8 @@ export default function Students() {
                                     />
                                     <FontAwesomeIcon
                                         icon={faTrash}
-                                        className="text-primary-darker hover:text-red-500 transition"
-                                        onClick={() => handleDeleteClass(classForm.id)}
+                                        className="text-red-400 hover:scale-125 transition"
+                                        onClick={() => handleDeleteClass(c.id)}
                                     />
                                 </>
                             )}
@@ -341,11 +382,15 @@ export default function Students() {
             </TabForm>
             {status == "authenticated" && session.user.level < 3 && (
                 <PageMenu
-                    options={{ "Cadastrar estudante": faGraduationCap, "Cadastrar turma": faUsers }}
+                    options={{ "Cadastrar estudante": faGraduationCap, "Cadastrar turma": faUsers, "Exportar dados": faFileExcel }}
                     onSelect={(index) => {
                         setForm(new StudentForm());
                         setClassForm(new ClassForm());
-                        setFormIndex(index);
+                        if (index == 2) {
+                            const ids = filtered.map(s => s.id);
+                            handleExport(ids)
+                        }
+                        else setFormIndex(index);
                     }}
                 />
             )}

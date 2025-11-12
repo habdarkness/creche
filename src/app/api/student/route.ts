@@ -15,12 +15,13 @@ export async function GET(request: Request) {
     let student;
     if (id) {
         student = await prisma.student.findUnique({
-            where: { id: Number(id) },
+            where: { id: Number(id), ...(session.level > 2 ? { class: { professor_id: session.id } } : {}) },
             include: { address: true, document: true, housing: true, asset: true, reports: true, class: true }
         });
     }
     else {
         student = await prisma.student.findMany({
+            ...(session.level > 2 ? { where: { class: { professor_id: session.id } } } : {}),
             include: { address: true, document: true, housing: true, asset: true, reports: true, class: true },
             orderBy: { name: "asc" }
         });
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     const session = await VerifyUser();
-    if (!session) { return NextResponse.json({ error: "Não autorizado" }, { status: 401 }); }
+    if (!session || session.level > 2) { return NextResponse.json({ error: "Não autorizado" }, { status: 401 }); }
 
     const data = await request.json();
     const { student, address, document, housing, asset } = data;
@@ -100,6 +101,7 @@ export async function POST(request: Request) {
         await prisma.action.create({
             data: {
                 user_id: session.id,
+                user_name: session.name,
                 description: id
                     ? `Atualizou a ficha do Estudante ${result.newStudent.name}`
                     : `Criou a ficha do Estudante ${result.newStudent.name}`
@@ -136,6 +138,7 @@ export async function DELETE(request: Request) {
         await prisma.action.create({
             data: {
                 user_id: session.id,
+                user_name: session.name,
                 description: `Deletou o estudante ${student.name} (${getAge(student.birthday)} anos)`
             }
         })

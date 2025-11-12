@@ -5,6 +5,8 @@ const prisma = new PrismaClient();
 
 async function main() {
     const passwordHash = await bcrypt.hash("123456", 10);
+
+    // === Usuário administrador ===
     await prisma.user.create({
         data: {
             name: "administrador",
@@ -13,10 +15,11 @@ async function main() {
             token_password: passwordHash,
             type: "Administrador",
             phone: "98999999999",
-            level: 1
-        }
+            level: 1,
+        },
     });
-    // === Usuários (professores) ===
+
+    // === Usuários (secretário e professor) ===
     const user1 = await prisma.user.create({
         data: {
             name: "Alice Silva",
@@ -34,22 +37,26 @@ async function main() {
             name: "Bruno Souza",
             email: "bruno@email.com",
             phone: "11999990002",
-            password: "123456",
+            password: passwordHash,
             token_password: passwordHash,
             type: "Professor",
             level: 3,
         },
     });
 
-    // === Função para criar um guardião ===
-    async function createGuardian(name: string) {
+    // === Função para criar guardião (pai ou mãe) ===
+    async function createGuardian(name: string, kinship: "Pai" | "Mãe") {
         return prisma.guardian.create({
             data: {
                 name,
                 birthday: new Date("1980-01-01"),
-                cpf: Math.floor(Math.random() * 10000000000).toString().padStart(11, "0"),
-                rg: Math.floor(Math.random() * 10000000).toString().padStart(7, "0"),
-                kinship: "Pai/Mãe",
+                cpf: Math.floor(Math.random() * 10000000000)
+                    .toString()
+                    .padStart(11, "0"),
+                rg: Math.floor(Math.random() * 10000000)
+                    .toString()
+                    .padStart(7, "0"),
+                kinship,
                 phone: "11999990000",
                 workplace: "Empresa X",
                 other_phone: "11999990000",
@@ -57,15 +64,17 @@ async function main() {
         });
     }
 
-    // === Criar alunos com famílias e outros dados ===
-    const studentsData = ["Lucas", "Mariana", "Gabriel", "Sofia", "Pedro"]
+    // === Criar alunos com pai/mãe e dados relacionados ===
+    const studentsData = ["Lucas", "Mariana", "Gabriel", "Sofia", "Pedro"];
 
     for (const s of studentsData) {
-        const dad = await createGuardian(`${s} Pai`);
-        const mom = await createGuardian(`${s} Mãe`);
-        const guardian = await createGuardian(`${s} Responsável`);
+        const dad = await createGuardian(`${s} Pai`, "Pai");
+        const mom = await createGuardian(`${s} Mãe`, "Mãe");
 
-        const student = await prisma.student.create({
+        // escolher aleatoriamente quem é o responsável
+        const guardian = Math.random() > 0.5 ? dad : mom;
+
+        await prisma.student.create({
             data: {
                 name: s,
                 birthday: new Date("2018-01-01"),
@@ -76,8 +85,19 @@ async function main() {
                 mom_id: mom.id,
                 guardian_id: guardian.id,
                 sus: { "Unidade de Saúde": "", "Número do Cartão SUS": "" },
-                family: [{ nome: "", parentesco: "", idade: 0, "educação": "", "profissão": "", "sálario": 0 }],
-                authorized: [{ nome: "", parentesco: "", rg: "", contato: "" }],
+                family: [
+                    {
+                        nome: "",
+                        parentesco: "",
+                        idade: 0,
+                        educação: "",
+                        profissão: "",
+                        sálario: 0,
+                    },
+                ],
+                authorized: [
+                    { nome: "", parentesco: "", rg: "", contato: "" },
+                ],
                 address: {
                     create: {
                         street: "Rua A",
@@ -93,8 +113,12 @@ async function main() {
                         birth_cert: "123456",
                         registry_city: "São Paulo",
                         birth_city: "São Paulo",
-                        cpf: Math.floor(Math.random() * 10000000000).toString().padStart(11, "0"),
-                        rg: Math.floor(Math.random() * 10000000).toString().padStart(7, "0"),
+                        cpf: Math.floor(Math.random() * 10000000000)
+                            .toString()
+                            .padStart(11, "0"),
+                        rg: Math.floor(Math.random() * 10000000)
+                            .toString()
+                            .padStart(7, "0"),
                         rg_issue_date: new Date("2018-01-01"),
                         rg_issuer: "SSP",
                     },
@@ -122,12 +146,15 @@ async function main() {
     }
 }
 
-main().then(() => {
-    console.log("Base de dados criada com sucesso!");
-    process.exit(0);
-}).catch((e) => {
-    console.error(e);
-    process.exit(1);
-}).finally(async () => {
-    await prisma.$disconnect();
-});
+main()
+    .then(() => {
+        console.log("Base de dados criada com sucesso!");
+        process.exit(0);
+    })
+    .catch((e) => {
+        console.error(e);
+        process.exit(1);
+    })
+    .finally(async () => {
+        await prisma.$disconnect();
+    });

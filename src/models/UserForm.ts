@@ -1,3 +1,4 @@
+import { ObjectFilters } from "@/lib/matches";
 import { z } from "zod";
 export const userTypes: Record<string, number> = {
     "Administrador": 1,
@@ -28,6 +29,12 @@ export class UserForm {
             type: this.type,
             level: this.type in userTypes ? userTypes[this.type] : undefined
         }
+    }
+    getFiltered(): ObjectFilters {
+        return {
+            term: `${this.name.toLowerCase()} ${this.email}`,
+            type: this.type
+        };
     }
     verify() {
         const result = loginSchema.safeParse(this.getData());

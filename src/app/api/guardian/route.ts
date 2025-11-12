@@ -46,6 +46,7 @@ export async function POST(request: Request) {
         await prisma.action.create({
             data: {
                 user_id: session.id,
+                user_name: session.name,
                 description: id
                     ? `Atualizou a ficha do responsável ${newGuardian.name}(${newGuardian.kinship})`
                     : `Criou a ficha do responsável ${newGuardian.name}(${newGuardian.kinship})`
@@ -69,6 +70,7 @@ export async function DELETE(request: Request) {
         await prisma.action.create({
             data: {
                 user_id: session.id,
+                user_name: session.name,
                 description: `Deletou o responsável ${guardian.name} (${guardian.kinship})`
             }
         })
