@@ -12,24 +12,24 @@ import expressions from "docxtemplater/expressions.js";
 
 const prisma = new PrismaClient();
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
     const session = await VerifyUser();
-    if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
-    if (session.level > 2) { return NextResponse.json({ error: "Não Autorizado" }, { status: 401 }); }
+    if (!session || session.level > 2) { return NextResponse.json({ error: "Não autorizado" }, { status: 401 }); }
 
     try {
-        const { id } = await req.json();
+        const { id } = await request.json();
         let student;
         if (id) {
             student = await prisma.student.findUnique({
                 where: { id: Number(id) }, include: {
-                    dad: true, mom: true, guardian: true,
+                    dad: true, mom: true, guardian: true, class: true,
                     address: true, document: true, housing: true, asset: true
                 }
             });
         }
 
         const data = format(student as StudentWithRelations | null);
+        console.log(data);
         const templatePath = path.join(process.cwd(), "public", "student_model.docx");
         const content = fs.readFileSync(templatePath, "binary");
         const zip = new PizZip(content);
@@ -47,6 +47,7 @@ export async function POST(req: Request) {
         });
     }
     catch (error: any) {
+        console.log(error)
         return NextResponse.json({ error: "Erro ao gerar documento" }, { status: 500 });
     }
 }
@@ -54,11 +55,14 @@ function format(student: StudentWithRelations | null) {
     if (student) {
         const clean = cleanObject(student)
         const form = new StudentForm({
-            ...clean,
             ...clean.address,
             ...clean.housing,
             ...clean.asset,
             ...clean.document,
+            dad: clean.dad,
+            mom: clean.mom,
+            guardian: clean.guardian,
+            ...clean,
         })
         return form.getDocxData();
     }

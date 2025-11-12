@@ -1,19 +1,22 @@
 "use client";
 
 import Card from "@/components/Card";
+import CardList from "@/components/CardList";
 import { useSearch } from "@/components/Contexts";
 import FormButton from "@/components/FormButton";
 import FormButtonGroup from "@/components/FormButtonGroup";
 import FormInput from "@/components/FormInput";
 import Loader from "@/components/Loader";
-import PageButton from "@/components/PageButton";
+import PageLayout from "@/components/PageLayout";
+import PageMenu from "@/components/PageMenu";
 import TabForm from "@/components/TabForm";
-import { capitalize } from "@/lib/format";
+import { capitalize, cleanObject } from "@/lib/format";
 import { generateToken } from "@/lib/generateToken";
 import { prismaDate } from "@/lib/prismaLib";
 import { UserForm, userTypes } from "@/models/UserForm";
-import { faBriefcase, faEnvelope, faKey, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBriefcase, faEnvelope, faKey, faTrash, faUser } from "@fortawesome/free-solid-svg-icons";
 import { User } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
@@ -23,23 +26,29 @@ export default function Users() {
     const [formVisible, setFormVisible] = useState(false);
     const [form, setForm] = useState<UserForm>(new UserForm({ token_password: generateToken() }));
     const { search } = useSearch();
+    const { data: session } = useSession();
 
-    useEffect(() => {
-        async function fetchUsers() {
-            try {
-                setLoading(true);
-                const res = await fetch("/api/user");
-                const data = await res.json();
-                setUsers(Array.isArray(data) ? data : []);
+    async function fetchUsers() {
+        try {
+            setLoading(true);
+            const res = await fetch("/api/user");
+            const data = await res.json();
+            if (res.ok) {
+                setUsers(data);
+                if (form.id > -1) {
+                    const user = data.find((u: User) => u.id == form.id);
+                    const clean = cleanObject(user)
+                    setForm(new UserForm(clean));
+                }
             }
-            catch (error) {
-                console.error("Erro ao buscar usuários:", error);
-                setUsers([]);
-            }
-            finally { setLoading(false); }
-        };
-        fetchUsers();
-    }, []);
+        }
+        catch (error) {
+            console.error("Erro ao buscar usuários:", error);
+            setUsers([]);
+        }
+        finally { setLoading(false); }
+    };
+    useEffect(() => { fetchUsers(); }, []);
     function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { id, value } = event.target;
         setForm(prev => new UserForm({
@@ -50,7 +59,7 @@ export default function Users() {
         event.preventDefault();
         const message = form.verify()
         if (message) return Swal.fire({
-            title: "Erro no cadastro/atualização",
+            title: "Erro de validação",
             text: message,
             icon: "error"
         });
@@ -81,23 +90,58 @@ export default function Users() {
         }
         catch (error) {
             return Swal.fire({
-                title: "Erro no cadastro/atualização",
+                title: `Erro ${form.id == -1 ? "no cadastrado" : "na atualização"}`,
                 text: String(error),
                 icon: "error"
             });
         }
     }
 
+    async function handleDelete(id: number) {
+        const user = users.find(g => g.id == id);
+        Swal.fire({
+            title: `Tem certeza que deseja deletar o usuário ${user && `${user.name} (tipo: ${user.type}, lavel: ${user.level})`}`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sim",
+            cancelButtonText: "Não",
+        }).then(async (result) => {
+            if (!result.isConfirmed) return;
+            try {
+                const res = await fetch("/api/user", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id })
+                })
+                const data = await res.json();
+                if (!res.ok) throw data.error;
+                setForm(new UserForm());
+                setFormVisible(false);
+                fetchUsers();
+                Swal.fire({
+                    title: "Usuário deletado com sucesso",
+                    icon: "success"
+                });
+            }
+            catch (error) {
+                return Swal.fire({
+                    title: "Erro ao deletar",
+                    text: String(error),
+                    icon: "error"
+                });
+            }
+        });
+    }
+
     if (loading) return (<div className="flex items-center justify-center h-full"><Loader /></div>)
     const filteredUsers = users.filter(user => {
         const term = search.toLowerCase();
-        const userTerm = (user.name + user.email + user.type).toLowerCase();
+        const userTerm = (user.name).toLowerCase();
         return userTerm.includes(term);
-    })
+    });
     return (
-        <div className="flex flex-col m-4 h-full">
-            <h1 className="text-2xl font-bold mb-4">Usuários</h1>
-            <ul className=" grid grid-cols-4 w-full gap-4">
+        <PageLayout title="Usuários" loading={loading}>
+            <CardList>
                 {filteredUsers.map(user => (
                     <Card key={user.id} pressable onClick={() => {
                         setForm(new UserForm({ ...user, send_token: false }));
@@ -105,13 +149,13 @@ export default function Users() {
                     }}>
                         <div className="flex justify-between gap-1 flex-wrap">
                             <p className="font-bold text-lg">{capitalize(user.name)}</p>
-                            <p className="text-sm">{capitalize(user.type)}</p>
+                            <p className="text-sm font-bold text-black opacity-50">{capitalize(user.type)}</p>
                         </div>
                         <p className="text-sm">{user.email}</p>
                         <p className="text-sm mx-auto text-black opacity-50 font-bold">Criado {prismaDate(user.created_at).toLocaleDateString("PT-BR")}</p>
                     </Card>
                 ))}
-            </ul>
+            </CardList>
             <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit}>
                 <FormInput id="name" label="Nome" icon={faUser} value={form.name} onChange={handleChange} />
                 <FormInput id="email" label="Email" icon={faEnvelope} value={form.email} onChange={handleChange} />
@@ -123,15 +167,19 @@ export default function Users() {
                     value={form.type}
                     onChange={handleChange}
                     fullWidth
+                    disabled={session?.user.id == form.id}
                 />
                 <FormButtonGroup>
                     {form.id != -1 && (
-                        <FormButton text={form.send_token ? `Senha: ${form.token_password}` : "Resetar senha"} color="bg-red-400" icon={faKey} onClick={() => setForm(prev => new UserForm({ ...prev, token_password: generateToken(), send_token: true }))} />
+                        <>
+                            <FormButton color="bg-red-400" icon={faTrash} onClick={() => handleDelete(form.id)} />
+                            <FormButton text={form.send_token ? `Senha: ${form.token_password}` : "Resetar senha"} color="bg-yellow-600" icon={faKey} onClick={() => setForm(prev => new UserForm({ ...prev, token_password: generateToken(), send_token: true }))} />
+                        </>
                     )}
                     <FormButton submit text={form.id == -1 ? "Cadastrar" : "Atualizar"} />
                 </FormButtonGroup>
             </TabForm>
-            <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new UserForm()); setFormVisible(true); }} />
-        </div>
+            <PageMenu options={{ "Cadastrar": faUser }} onSelect={(index) => { setForm(new UserForm()); setFormVisible(true); }} />
+        </PageLayout>
     );
 }

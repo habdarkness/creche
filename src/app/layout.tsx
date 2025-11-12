@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Template from "@/components/Template";
+import Layout from "@/components/Layout";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 config.autoAddCss = false;
@@ -31,9 +31,9 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
 	return (
 		<html lang="pt-BR">
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-				<Template>
+				<Layout>
 					{children}
-				</Template>
+				</Layout>
 			</body>
 		</html>
 	);

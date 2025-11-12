@@ -54,8 +54,6 @@ model Student {
     twins        Boolean  @default(false)
     has_siblings Boolean  @default(false)
     //série
-    school_year  String?
-    school_grade String?
     class_id     Int?
     class        Class?   @relation(fields: [class_id], references: [id])
 
@@ -110,7 +108,7 @@ model Address {
     phone_home   String?
     phone_alt    String?
     student_id   Int?     @unique
-    student      Student? @relation(fields: [student_id], references: [id])
+    student      Student? @relation(fields: [student_id], references: [id], onDelete: Cascade)
 }
 
 model Documents {
@@ -124,7 +122,7 @@ model Documents {
     rg_issue_date   DateTime?
     rg_issuer       String?
     student_id      Int?      @unique
-    student         Student?  @relation(fields: [student_id], references: [id])
+    student         Student?  @relation(fields: [student_id], references: [id], onDelete: Cascade)
 }
 
 model Housing {
@@ -140,7 +138,7 @@ model Housing {
     electricity   Boolean?
     water         Boolean?
     student_id    Int?     @unique
-    student       Student? @relation(fields: [student_id], references: [id])
+    student       Student? @relation(fields: [student_id], references: [id], onDelete: Cascade)
 }
 
 model Assets {
@@ -165,25 +163,30 @@ model Assets {
     motorcycle      Boolean? @default(false)
     car             Boolean? @default(false)
     student_id      Int?     @unique
-    student         Student? @relation(fields: [student_id], references: [id])
+    student         Student? @relation(fields: [student_id], references: [id], onDelete: Cascade)
 }
 
 model Class {
-    id           Int       @id @default(autoincrement())
-    name         String?
-    professor_id Int?      @unique
-    professor    User?     @relation(fields: [professor_id], references: [id])
-    students     Student[]
-    created_by   String    @default("")
-    created_at   DateTime  @default(now())
+    id    Int     @id @default(autoincrement())
+    year  String?
+    grade String?
+
+    professor_id Int?  @unique
+    professor    User? @relation(fields: [professor_id], references: [id])
+
+    students Student[]
+
+    created_by String   @default("")
+    created_at DateTime @default(now())
 }
 
 model Report {
-    id          Int     @id @default(autoincrement())
+    id          Int      @id @default(autoincrement())
     title       String?
     description String?
+    date        DateTime
 
-    file_path String?
+    file Json?
 
     professor_id Int?
     professor    User? @relation(fields: [professor_id], references: [id])

@@ -4,7 +4,7 @@ import { Contexts } from "./Contexts";
 import Header from "./Header";
 import Menu from "./Menu";
 
-export default function Template({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: React.ReactNode }) {
     return (
         <SessionProvider>
             <Contexts>

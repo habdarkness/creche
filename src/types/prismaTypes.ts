@@ -1,4 +1,4 @@
-import { Action, Address, Assets, Documents, Guardian, Housing, Student, User } from "@prisma/client";
+import { Action, Address, Assets, Class, Documents, Guardian, Housing, Student, User } from "@prisma/client";
 
 export type UserWithRelations = User & {
     actions: Action[]
@@ -8,6 +8,7 @@ export type StudentWithRelations = Student & {
     address: Address;
     housing: Housing;
     assets: Assets;
+    classes: Class | null;
     mom: Guardian | null;
     dad: Guardian | null;
     guardian: Guardian | null;
@@ -19,4 +20,8 @@ export type GuardianWithRelations = Guardian & {
 }
 export type ActionWithRelations = Action & {
     user: User
+}
+export type ClassWithRelations = Class & {
+    professor: User;
+    students: Student;
 }

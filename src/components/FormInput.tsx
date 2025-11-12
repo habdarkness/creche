@@ -5,13 +5,14 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import Switch from "./Switch";
 import { capitalize } from "@/lib/format";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import FileInput from "./FileInput";
 
 type Props = {
     id: string;
     label?: string;
     placeholder?: string;
     icon?: IconProp;
-    type?: "text" | "textarea" | "password" | "date" | "number" | "time";
+    type?: "text" | "textarea" | "password" | "date" | "number" | "time" | "file";
     options?: [number, string][] | string[];
     search?: boolean;
     value: string | number | boolean | Record<string, any> | Record<string, any>[];
@@ -47,7 +48,9 @@ export default function FormInput({
 
     return (
         <div className={`flex flex-col ${fullWidth ? "w-full" : ""}`}>
-            {keys ? (
+            {type == "file" ? (
+                <FileInput id={id} label={label} icon={icon} onChange={onChange} value={value as { base64: string, name: string } | null} disabled={disabled} />
+            ) : keys ? (
                 <div className="flex flex-col gap-2 text-white">
                     <label htmlFor={id} className="text-primary font-bold">{label}</label>
                     {objectValue.map((v, i) => (
@@ -129,25 +132,28 @@ export default function FormInput({
                                 <select
                                     id={id}
                                     name={id}
-                                    value={
-                                        typeof value == "object" ? value.toString()
-                                            : typeof value === "boolean" ? String(value)
-                                                : value
+                                    value={value == null || value === "" || Number.isNaN(value)
+                                        ? ""
+                                        : Array.isArray(value)
+                                            ? value[0]?.toString()
+                                            : typeof value === "object"
+                                                ? ""
+                                                : String(value)
                                     }
                                     onChange={onChange}
-                                    className={`w-full ${!disabled && search ? "bg-primary p-2 rounded-sm " : "bg-transparent"}`}
+                                    className={`w-full ${!disabled && search ? "bg-primary p-2 rounded-sm " : "bg-transparent"} cursor-pointer`}
                                     disabled={disabled}
                                 >
                                     {options.length > 0 && Array.isArray(options[0]) ? (
-                                        <option value={-1} className="text-white bg-primary-darker font-bold">{disabled ? "Não seleciondo" : "Selecione uma opção"}</option>
+                                        <option value={-1} className={option}>{disabled ? "Não seleciondo" : "Selecione uma opção"}</option>
                                     ) : (
-                                        <option value={`Selecione uma opção`} className="text-white bg-primary-darker font-bold">{disabled ? "Não seleciondo" : "Selecione uma opção"}</option>
+                                        <option value={`Selecione uma opção`} className={option}>{disabled ? "Não seleciondo" : "Selecione uma opção"}</option>
                                     )}
                                     {options.map((opt) => {
                                         if (Array.isArray(opt)) {
                                             if (!opt[1].includes(searchText) && opt[0] != value) return;
                                             return (
-                                                <option key={opt[0]} value={opt[0]} className="text-white bg-primary-darker font-bold">
+                                                <option key={opt[0]} value={opt[0]} className={option}>
                                                     {opt[1]}
                                                 </option>
                                             )
@@ -155,7 +161,7 @@ export default function FormInput({
                                         else {
                                             if (!opt.includes(searchText) && opt != value) return;
                                             return (
-                                                <option key={opt} value={opt} className="text-white bg-primary-darker font-bold">
+                                                <option key={opt} value={opt} className={option}>
                                                     {opt}
                                                 </option>
                                             )
@@ -190,7 +196,9 @@ export default function FormInput({
                         )}
                     </div>
                 </>
-            )}
-        </div>
+            )
+            }
+        </div >
     )
 }
+const option = "text-white bg-primary-darker font-bold"

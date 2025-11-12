@@ -1,28 +1,37 @@
 import { NextResponse } from "next/server";
 import { PrismaClient, Student } from "@prisma/client";
 import { VerifyUser } from "@/lib/auth";
+import { getAge } from "@/lib/format";
 
 const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
     const session = await VerifyUser();
-    if (!session) { return NextResponse.json({ error: "Não autenticado" }, { status: 401 }); }
+    if (!session) { return NextResponse.json({ error: "Não autorizado" }, { status: 401 }); }
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
     let student;
-    if (id) { student = await prisma.student.findUnique({ where: { id: Number(id) }, include: { address: true, document: true, housing: true, asset: true } }); }
-    else { student = await prisma.student.findMany({ include: { address: true, document: true, housing: true, asset: true } }); }
+    if (id) {
+        student = await prisma.student.findUnique({
+            where: { id: Number(id) },
+            include: { address: true, document: true, housing: true, asset: true, reports: true, class: true }
+        });
+    }
+    else {
+        student = await prisma.student.findMany({
+            include: { address: true, document: true, housing: true, asset: true, reports: true, class: true },
+            orderBy: { name: "asc" }
+        });
+    }
 
     return NextResponse.json(student);
 }
 
 export async function POST(request: Request) {
     const session = await VerifyUser();
-    if (!session) {
-        return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
+    if (!session) { return NextResponse.json({ error: "Não autorizado" }, { status: 401 }); }
 
     const data = await request.json();
     const { student, address, document, housing, asset } = data;
@@ -90,7 +99,7 @@ export async function POST(request: Request) {
 
         await prisma.action.create({
             data: {
-                user_id: Number(session.id),
+                user_id: session.id,
                 description: id
                     ? `Atualizou a ficha do Estudante ${result.newStudent.name}`
                     : `Criou a ficha do Estudante ${result.newStudent.name}`
@@ -113,4 +122,24 @@ export async function POST(request: Request) {
             { status: 500 }
         );
     }
+}
+export async function DELETE(request: Request) {
+    const session = await VerifyUser();
+    if (!session || session.level > 2) { return NextResponse.json({ error: "Não autorizado" }, { status: 401 }); }
+
+
+    const { id } = await request.json();
+    try {
+        const student = await prisma.student.delete({
+            where: { id: parseInt(id) }
+        })
+        await prisma.action.create({
+            data: {
+                user_id: session.id,
+                description: `Deletou o estudante ${student.name} (${getAge(student.birthday)} anos)`
+            }
+        })
+        return NextResponse.json({ message: "Estudante deletado", student });
+    }
+    catch (error) { return NextResponse.json({ error: "Erro ao deletar estudante: " + String(error) }, { status: 500 }); }
 }

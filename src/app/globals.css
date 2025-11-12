@@ -34,15 +34,32 @@ input:focus {
   outline: none;
 }
 
+select:focus {
+  outline: none;
+}
+
+
 .swal2-popup {
-  background-color: var(--color-background);
-  color: var(--color-foreground)
+  background-color: var(--color-background) !important;
+  color: var(--color-foreground) !important;
 }
 
-.swal2-popup button {
-  background-color: var(--color-primary);
+/* confirm */
+.swal2-confirm {
+  background-color: var(--color-primary) !important;
+  color: white !important;
 }
 
-.swal2-popup button:hover {
-  background-color: var(--color-primary-darker);
+.swal2-confirm:hover {
+  background-color: var(--color-primary-darker) !important;
+}
+
+/* cancel */
+.swal2-cancel {
+  background-color: #ff6467 !important;
+  color: white !important;
+}
+
+.swal2-cancel:hover {
+  background-color: #fb2c36 !important;
 }

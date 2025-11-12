@@ -1,7 +1,10 @@
+import { prismaDate } from "./prismaLib";
+
 export function formatLink(name: string) {
     return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(" ", "-").toLowerCase();
 }
 export function cleanObject(object: Record<string, any>): Record<string, any> {
+    if (!object) return {};
     return Object.fromEntries(
         Object.entries(object).map(([k, v]) => [k, v === null ? "" : v])
     );
@@ -64,4 +67,15 @@ export function formatDate(value?: Date | string | null): string {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = String(date.getFullYear()).slice(-2);
     return `${day}/${month}/${year}`;
+}
+export function getAge(birthday: Date) {
+    const today = new Date();
+    const birth = prismaDate(birthday) || new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    return age;
 }

@@ -24,7 +24,7 @@ async function main() {
             phone: "11999990001",
             password: passwordHash,
             token_password: passwordHash,
-            type: "Scretário",
+            type: "Secretário",
             level: 2,
         },
     });
@@ -38,21 +38,6 @@ async function main() {
             token_password: passwordHash,
             type: "Professor",
             level: 3,
-        },
-    });
-
-    // === Classes ===
-    const class1 = await prisma.class.create({
-        data: {
-            name: "Turma A",
-            professor_id: user1.id,
-        },
-    });
-
-    const class2 = await prisma.class.create({
-        data: {
-            name: "Turma B",
-            professor_id: user2.id,
         },
     });
 
@@ -73,22 +58,16 @@ async function main() {
     }
 
     // === Criar alunos com famílias e outros dados ===
-    const studentsData = [
-        { name: "Lucas", classId: class1.id },
-        { name: "Mariana", classId: class1.id },
-        { name: "Gabriel", classId: class2.id },
-        { name: "Sofia", classId: class2.id },
-        { name: "Pedro", classId: class2.id },
-    ];
+    const studentsData = ["Lucas", "Mariana", "Gabriel", "Sofia", "Pedro"]
 
     for (const s of studentsData) {
-        const dad = await createGuardian(`${s.name} Pai`);
-        const mom = await createGuardian(`${s.name} Mãe`);
-        const guardian = await createGuardian(`${s.name} Responsável`);
+        const dad = await createGuardian(`${s} Pai`);
+        const mom = await createGuardian(`${s} Mãe`);
+        const guardian = await createGuardian(`${s} Responsável`);
 
         const student = await prisma.student.create({
             data: {
-                name: s.name,
+                name: s,
                 birthday: new Date("2018-01-01"),
                 color: "Parda",
                 gender: "M",
@@ -97,6 +76,8 @@ async function main() {
                 mom_id: mom.id,
                 guardian_id: guardian.id,
                 sus: { "Unidade de Saúde": "", "Número do Cartão SUS": "" },
+                family: [{ nome: "", parentesco: "", idade: 0, "educação": "", "profissão": "", "sálario": 0 }],
+                authorized: [{ nome: "", parentesco: "", rg: "", contato: "" }],
                 address: {
                     create: {
                         street: "Rua A",
@@ -141,7 +122,10 @@ async function main() {
     }
 }
 
-main().catch((e) => {
+main().then(() => {
+    console.log("Base de dados criada com sucesso!");
+    process.exit(0);
+}).catch((e) => {
     console.error(e);
     process.exit(1);
 }).finally(async () => {

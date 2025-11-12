@@ -1,23 +1,27 @@
 "use client";
 
 import Card from "@/components/Card";
+import CardList from "@/components/CardList";
 import { useSearch } from "@/components/Contexts";
+import FormButton from "@/components/FormButton";
+import FormButtonGroup from "@/components/FormButtonGroup";
 import FormInput from "@/components/FormInput";
-import Loader from "@/components/Loader";
-import PageButton from "@/components/PageButton";
+import PageLayout from "@/components/PageLayout";
+import PageMenu from "@/components/PageMenu";
 import StudentTabForm from "@/components/StudentTabForm";
 import TabForm from "@/components/TabForm";
-import { capitalize, cleanObject } from "@/lib/format";
+import { capitalize, cleanObject, formatPhone, formatRG, getAge } from "@/lib/format";
 import { prismaDate } from "@/lib/prismaLib";
 import { GuardianForm } from "@/models/GuardianForm";
 import { StudentForm } from "@/models/StudentForm";
-import { GuardianWithRelations } from "@/types/prismaTypes";
-import { faEnvelope, faUser } from "@fortawesome/free-solid-svg-icons";
+import { GuardianWithRelations, StudentWithRelations } from "@/types/prismaTypes";
+import { faEnvelope, faSave, faTrash, faUser } from "@fortawesome/free-solid-svg-icons";
 import { Student } from "@prisma/client";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 export default function Guardians() {
+    const [students, setStudents] = useState<StudentWithRelations[]>([]);
     const [guardians, setGuardians] = useState<GuardianWithRelations[]>([]);
     const [loading, setLoading] = useState(true);
     const [formVisible, setFormVisible] = useState(false);
@@ -26,22 +30,40 @@ export default function Guardians() {
     const [studentForm, setStudentForm] = useState<StudentForm>(new StudentForm())
     const { search } = useSearch();
 
-    useEffect(() => {
-        async function fetchGuardians() {
-            try {
-                setLoading(true);
-                const res = await fetch("/api/guardian");
-                const data = await res.json();
-                setGuardians(Array.isArray(data) ? data : []);
+    async function fetchAll() {
+        try {
+            if (!formVisible && !studentFormVisible) setLoading(true);
+            const resGuardian = await fetch("/api/guardian");
+            const dataGuardian = await resGuardian.json();
+            if (resGuardian.ok) {
+                setGuardians(dataGuardian);
+                if (form.id > -1) {
+                    const guardian = dataGuardian.find((g: GuardianWithRelations) => g.id == form.id);
+                    const clean = cleanObject(guardian)
+                    setForm(new GuardianForm(clean));
+                }
             }
-            catch (error) {
-                console.error("Erro ao buscar responsáveis:", error);
-                setGuardians([]);
+            const resStudent = await fetch("/api/student");
+            const dataStudent = await resStudent.json();
+            if (resStudent.ok) {
+                setStudents(dataStudent);
+                if (studentForm.id > -1) {
+                    const student = dataStudent.find((s: StudentWithRelations) => s.id == studentForm.id);
+                    const clean = cleanObject(student)
+                    setStudentForm(new StudentForm({
+                        ...clean.address,
+                        ...clean.housing,
+                        ...clean.asset,
+                        ...clean.document,
+                        ...clean,
+                    }));
+                }
             }
-            finally { setLoading(false); }
-        };
-        fetchGuardians();
-    }, []);
+        }
+        catch (error) { console.error("Erro ao buscar estudantes:", error); }
+        finally { setLoading(false); }
+    };
+    useEffect(() => { fetchAll(); }, []);
     function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { id, value } = event.target;
         setForm(prev => new GuardianForm({ ...prev, [id]: value }));
@@ -50,7 +72,7 @@ export default function Guardians() {
         event.preventDefault();
         const message = form.verify()
         if (message) return Swal.fire({
-            title: "Erro no cadastro/atualização",
+            title: "Erro de validação",
             text: message,
             icon: "error"
         });
@@ -62,17 +84,7 @@ export default function Guardians() {
             })
             const data = await res.json();
             if (!res.ok) throw data.error;
-            setGuardians(prev => {
-                const index = prev.findIndex(g => g.id === data.guardian.id);
-                if (index !== -1) {
-                    prev[index] = data.guardian;
-                    return prev;
-                }
-                else {
-                    return [...prev, data.guardian];
-                }
-            });
-
+            fetchAll();
             Swal.fire({
                 title: `Usuário ${form.id == -1 ? "cadastrado" : "atualizado"} com sucesso!`,
                 icon: "success"
@@ -81,13 +93,49 @@ export default function Guardians() {
         }
         catch (error) {
             return Swal.fire({
-                title: "Erro no cadastro/atualização",
+                title: `Erro ${form.id == -1 ? "no cadastrado" : "na atualização"}`,
                 text: String(error),
                 icon: "error"
             });
         }
     }
-
+    async function handleDelete(id: number) {
+        const guardian = guardians.find(g => g.id == id);
+        Swal.fire({
+            title: `Tem certeza que deseja deletar o responsável ${guardian && `${guardian.name} (${guardian.kinship})`}`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sim",
+            cancelButtonText: "Não",
+        }).then(async (result) => {
+            if (!result.isConfirmed) return;
+            try {
+                const res = await fetch("/api/guardian", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id })
+                })
+                const data = await res.json();
+                if (!res.ok) throw data.error;
+                setForm(new GuardianForm());
+                setStudentForm(new StudentForm());
+                setFormVisible(false);
+                setStudentFormVisible(false);
+                fetchAll();
+                Swal.fire({
+                    title: "Responsável deletado com sucesso",
+                    icon: "success"
+                });
+            }
+            catch (error) {
+                return Swal.fire({
+                    title: "Erro ao deletar",
+                    text: String(error),
+                    icon: "error"
+                });
+            }
+        });
+    }
     function handleStudentChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { id, value } = event.target;
         setStudentForm(prev => new StudentForm({
@@ -108,47 +156,65 @@ export default function Guardians() {
             icon: "error"
         });
         try {
-            const res = await fetch("/api/student", {
+            const res = await fetch("/api/guardian", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(studentForm.getData())
             })
             const data = await res.json();
             if (!res.ok) throw data.error;
-            setGuardians(prev => {
-                const dad_index = prev.findIndex(g => g.id === data.student.dad_id);
-                if (dad_index != -1) {
-                    const index = prev[dad_index].dad_of.findIndex(s => s.id == data.student.id);
-                    if (index != -1) { prev[dad_index].dad_of[index] = data.student }
-                }
-                const mom_index = prev.findIndex(g => g.id === data.student.mom_id);
-                if (mom_index != -1) {
-                    const index = prev[mom_index].dad_of.findIndex(s => s.id == data.student.id);
-                    if (index != -1) { prev[mom_index].dad_of[index] = data.student }
-                }
-                const guardian_index = prev.findIndex(g => g.id === data.student.guardian_id);
-                if (guardian_index != -1) {
-                    const index = prev[guardian_index].dad_of.findIndex(s => s.id == data.student.id);
-                    if (index != -1) { prev[guardian_index].dad_of[index] = data.student }
-                }
-                return [...prev]
-            });
-
+            fetchAll();
             Swal.fire({
-                title: `Estudante ${form.id == -1 ? "cadastrado" : "atualizado"} com sucesso!`,
+                title: `Estudante ${studentForm.id == -1 ? "cadastrado" : "atualizado"} com sucesso!`,
                 icon: "success"
             });
             setStudentForm(new StudentForm());
         }
         catch (error) {
             return Swal.fire({
-                title: "Erro no cadastro/atualização",
+                title: `Erro ${studentForm.id == -1 ? "no cadastrado" : "na atualização"}`,
                 text: String(error),
                 icon: "error"
             });
         }
     }
-    if (loading) return (<div className="flex items-center justify-center h-full"><Loader /></div>)
+    async function handleDeleteStudent(id: number) {
+        const student = students.find(s => s.id == id);
+        Swal.fire({
+            title: `Tem certeza que deseja deletar o etudante${student && `${student.name} (${getAge(student.birthday)}`})`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sim",
+            cancelButtonText: "Não",
+        }).then(async (result) => {
+            if (!result.isConfirmed) return;
+            try {
+                const res = await fetch("/api/student", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id })
+                })
+                const data = await res.json();
+                if (!res.ok) throw data.error;
+                setForm(new GuardianForm());
+                setStudentForm(new StudentForm());
+                setFormVisible(false);
+                setStudentFormVisible(false);
+                fetchAll();
+                Swal.fire({
+                    title: "Estudante deletado com sucesso",
+                    icon: "success"
+                });
+            }
+            catch (error) {
+                return Swal.fire({
+                    title: "Erro ao deletar",
+                    text: String(error),
+                    icon: "error"
+                });
+            }
+        });
+    }
     const filtered = guardians.filter(guardian => {
         if (!guardian) return false;
         const term = search.toLowerCase();
@@ -156,9 +222,8 @@ export default function Guardians() {
         return userTerm.includes(term);
     })
     return (
-        <div className="flex flex-col m-4 h-full">
-            <h1 className="text-2xl font-bold mb-4">Responsáveis</h1>
-            <ul className=" grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 w-full gap-4">
+        <PageLayout title="Responsáveis" loading={loading}>
+            <CardList>
                 {filtered.map(guardian => (
                     <Card key={guardian.id} pressable onClick={() => {
                         setForm(new GuardianForm({ ...guardian }));
@@ -166,17 +231,21 @@ export default function Guardians() {
                     }}>
                         <div className="flex justify-between gap-1 flex-wrap mb-2">
                             <p className="font-bold text-lg">{capitalize(guardian.name)}</p>
-                            <p className="text-sm">{capitalize(guardian.kinship)}</p>
+                            <p className="text-sm font-bold text-black opacity-50">{capitalize(guardian.kinship)}</p>
                         </div>
                         <div className="flex justify-between gap-1 flex-wrap">
-                            <p className="text-sm">RG: {guardian.rg}</p>
-                            <p className="text-sm">Telefone: {guardian.phone}</p>
+                            <p className="text-sm">RG: {formatRG(guardian.rg)}</p>
+                            <p className="text-sm">Telefone: {formatPhone(guardian.phone)}</p>
                         </div>
-                        <p className="text-sm">Alunos vinculados: {getStudents(guardian)}</p>
+                        <p className="text-sm">Alunos: {getStudents(guardian)}</p>
                     </Card>
                 ))}
-            </ul>
-            <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit} submit={form.id == -1 ? "Cadastrar" : "Atualizar"} >
+            </CardList>
+            <TabForm visible={formVisible} onCancel={() => setFormVisible(false)} onSubmit={handleSubmit} >
+                <FormButtonGroup>
+                    {form.id > -1 && (<FormButton color="bg-red-400" icon={faTrash} onClick={() => handleDelete(form.id)} />)}
+                    <FormButton submit text={form.id == -1 ? "Cadastrar" : "Atualizar"} icon={faSave} />
+                </FormButtonGroup>
                 <FormInput id="name" label="Nome" icon={faUser} value={form.name} onChange={handleChange} />
                 <FormInput
                     id="birthday"
@@ -194,40 +263,52 @@ export default function Guardians() {
                 <FormInput id="other_phone" label="Outro Telefone" icon={faUser} value={form.other_phone} onChange={handleChange} />
                 <div className="bg-background-darker p-2 rounded-3xl">
                     <p className="text-center text-primary font-bold mb-2">Estudantes vinculados</p>
-                    <ul className="grid grid-cols-2 md:grid-cols-3 w-full gap-4">
-                        {form.getStudents().map(student => (
-                            <Card key={student.id} pressable disabled={student.status != "Matriculado"} onClick={() => {
-                                const clean = cleanObject(student)
-                                setStudentForm(new StudentForm({
-                                    ...clean,
-                                    ...clean.address,
-                                    ...clean.housing,
-                                    ...clean.asset,
-                                    ...clean.document,
-                                }));
-                                setStudentFormVisible(true);
-                            }}>
-                                <p className="font-bold text-lg">{capitalize(student.name)}</p>
-                                <p className="text-sm">{student.status}</p>
-                                <p className="text-sm">
-                                    {(() => {
-                                        if (!student.birthday) return "Idade desconhecida";
-                                        const birthDate = prismaDate(student.birthday);
-                                        const today = new Date();
-                                        let age = today.getFullYear() - birthDate.getFullYear();
-                                        const m = today.getMonth() - birthDate.getMonth();
-                                        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; }
-                                        return `${age} anos`;
-                                    })()}
-                                </p>
-                            </Card>
-                        ))}
-                    </ul>
+                    <CardList>
+                        {form.getStudents().map(guardian_student => {
+                            const student = students.find(s => s.id == guardian_student.id);
+                            if (!student) return;
+                            return (
+                                <Card key={student.id} pressable disabled={student.status != "Matriculado"} onClick={() => {
+                                    const clean = cleanObject(student)
+                                    setStudentForm(new StudentForm({
+                                        ...clean.address,
+                                        ...clean.housing,
+                                        ...clean.asset,
+                                        ...clean.document,
+                                        ...clean,
+                                    }));
+                                    setStudentFormVisible(true);
+                                }}>
+                                    <p className="font-bold text-lg">{capitalize(student.name)}</p>
+                                    <p className="text-sm">{student.status}</p>
+                                    <p className="text-sm">
+                                        {(() => {
+                                            if (!student.birthday) return "Idade desconhecida";
+                                            const birthDate = prismaDate(student.birthday);
+                                            const today = new Date();
+                                            let age = today.getFullYear() - birthDate.getFullYear();
+                                            const m = today.getMonth() - birthDate.getMonth();
+                                            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; }
+                                            return `${age} anos`;
+                                        })()}
+                                    </p>
+                                </Card>
+                            )
+                        })}
+                    </CardList>
                 </div>
             </TabForm>
-            <StudentTabForm form={studentForm} onChange={handleStudentChange} onSubmit={handleStudentSubmit} visible={studentFormVisible} onVisibilityChanged={setStudentFormVisible} guardians={guardians} />
-            <PageButton text="Cadastrar" icon={faUser} onClick={() => { setForm(new GuardianForm()); setFormVisible(true); }} />
-        </div>
+            <StudentTabForm
+                form={studentForm}
+                onChange={handleStudentChange}
+                onSubmit={handleStudentSubmit}
+                visible={studentFormVisible}
+                onVisibilityChanged={setStudentFormVisible}
+                guardians={guardians}
+                onDelete={handleDeleteStudent}
+            />
+            <PageMenu options={{ "Cadastrar": faUser }} onSelect={(index) => { setForm(new GuardianForm()); setFormVisible(true); }} />
+        </PageLayout>
     );
 }
 
@@ -237,6 +318,5 @@ function getStudents(guardian: GuardianWithRelations): number {
     allStudents.forEach(student => {
         uniqueMap.set(student.id, student);
     })
-    console.log(uniqueMap);
     return uniqueMap.size;
 }

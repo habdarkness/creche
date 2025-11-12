@@ -31,7 +31,7 @@ npx prisma migrate reset
 ---
 
 ## 👤 Iniciar o BD
-Para criar um usuário administrador (email: administrador@email.com senha: 123456):
+Para criar um usuário administrador (email: (administrador@email.com, alice@email.com, bruno@email.com) senha: 123456):
 ```bash
 npx tsx src/scripts/initializeBD.ts
 ```

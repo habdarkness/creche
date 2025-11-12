@@ -35,8 +35,6 @@ export default function Users() {
         return acc;
     }, {} as Record<string, Array<ActionWithRelations>>);
 
-
-    console.log(organized)
     return (
         <PageLayout title="Histórico de ações" loading={loading}>
             <ul className="flex flex-col gap-2">
@@ -46,11 +44,13 @@ export default function Users() {
                         <ul className="flex flex-col gap-0.5">
                             {dayActions.map((action) => (
                                 <Card key={action.id}>
-                                    <div className="flex gap-1">
-                                        <p className="font-bold text-black opacity-50">
-                                            {prismaDate(action.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", })}
-                                        </p>
-                                        <p className="font-bold">{capitalize(action.user.name) + ":"}</p>
+                                    <div className="flex flex-col gap-0.5 md:flex-row md:gap-1">
+                                        <div className="flex gap-1 justify-between md:flex-row-reverse">
+                                            <p className="font-bold">{capitalize(action.user.name) + ":"}</p>
+                                            <p className="font-bold text-black opacity-50">
+                                                {prismaDate(action.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", })}
+                                            </p>
+                                        </div>
                                         {action.description}
                                     </div>
                                 </Card>

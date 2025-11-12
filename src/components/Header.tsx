@@ -80,23 +80,23 @@ export default function Header() {
                         className="relative flex items-center gap-2"
                         onMouseEnter={() => setHovered(true)}
                     >
-                        <h1 className="text-reverse text-xl whitespace-nowrap">{userName}</h1>
+                        <h1 className="text-reverse text-lg font-bold whitespace-nowrap">{userName}</h1>
                         <FontAwesomeIcon className="text-reverse text-2xl ml" icon={faClipboardUser} />
                         <div
                             className={`
-                                    absolute translate-y-[75%] flex flex-col items-center gap-2
-                                    rounded-xl bg-background ${!hovered && "scale-x-0"} p-2 
-                                    border-2 border-background-darker text-reverse transition-all cursor-pointer
+                                    absolute translate-y-[75%] flex flex-col items-center
+                                    rounded-xl bg-background ${!hovered && "scale-x-0"} overflow-clip
+                                    border-2 border-background-darker text-reverse transition-all
                                 `}
                         >
                             {Object.entries(pages).map(([name, icon]) => (
                                 <button
                                     key={name}
-                                    className="flex gap-2 hover:text-primary hover:scale-105 transition"
+                                    className="flex gap-2 w-full justify-end px-2 py-1 hover:bg-primary transition items-center cursor-pointer"
                                     onClick={() => name == "Sair" ? signOut() : router.push(formatLink(name))}
                                 >
-                                    <h1 className="text-xl whitespace-nowrap">{name}</h1>
-                                    <FontAwesomeIcon icon={icon} className="text-2xl" />
+                                    <h1 className="whitespace-nowrap">{name}</h1>
+                                    <FontAwesomeIcon icon={icon} className="text-lg" />
                                 </button>
                             ))}
                         </div>

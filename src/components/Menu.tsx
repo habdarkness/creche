@@ -49,7 +49,7 @@ export default function Menu() {
         <div
             className="
                 fixed
-                bg-background p-4 gap-4 items-center
+                bg-background p-4 gap-y-4 items-center
                 transition-all overflow-hidden group
                 z-50
 
@@ -70,9 +70,8 @@ export default function Menu() {
                     onClick={() => changeTab(formatLink(name))}
                 >
                     <FontAwesomeIcon icon={icon} className="text-2xl mx-auto" />
-                    <span className="font-bold transition-all max-w-0 group-hover:max-w-[200px] opacity-0 group-hover:opacity-100 overflow-hidden whitespace-nowrap">{name}</span>
+                    <span className="font-bold transition-all md:pl-2 md:text-left max-w-0 group-hover:max-w-[200px] opacity-0 group-hover:opacity-100 overflow-hidden whitespace-nowrap">{name}</span>
                 </button>
-
             ))}
         </div>
     )

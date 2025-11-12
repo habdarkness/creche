@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
                 if (!isValid) return null;
                 const isTemporary = user.password == user.token_password;
                 return {
-                    id: user.id.toString(),
+                    id: user.id,
                     name: user.name,
                     email: user.email,
                     level: user.level,
@@ -47,7 +47,7 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token.id = user.id;
+                token.id = Number(user.id);
                 token.name = user.name;
                 token.email = user.email;
                 token.level = user.level;

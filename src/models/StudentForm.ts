@@ -1,9 +1,10 @@
 import { formatCPF, formatCurrency, formatPhone, formatRG, parseID } from "@/lib/format";
-import { Guardian } from "@prisma/client";
-import { format } from "path";
+import { prismaDate } from "@/lib/prismaLib";
+import { Class, Guardian } from "@prisma/client";
 import { z } from "zod";
 //npm install docxtemplater pizzip
 export const studentStatus = ["Espera", "Matriculado", "Desligado"];
+export const studentGender = ["M", "F"];
 export const studentMobility = ["Nenhuma", "Temporária", "Permanente"];
 export const studentClassifications = [
     "Nenhuma (sem deficiência ou condição específica)", "Altas Habilidades(Superdotação)", "Cegueira",
@@ -26,8 +27,10 @@ export class StudentForm {
     status = studentStatus[0];
     name = "";
     birthday: Date | null = null;
-    gender = "";
+    gender = studentGender[0];
     color = studentColor[0];
+    class_id = -1;
+    class: Class | null = null;
     twins = false;
     has_siblings = false;
     //saúde e deficiências
@@ -108,6 +111,7 @@ export class StudentForm {
 
     constructor(data: Partial<StudentForm> = {}) {
         Object.assign(this, data);
+        this.class_id = data.class_id ? Number(data.class_id) : -1;
         this.dad_id = data.dad_id ? Number(data.dad_id) : -1;
         this.mom_id = data.mom_id ? Number(data.mom_id) : -1;
         this.guardian_id = data.guardian_id ? Number(data.guardian_id) : -1;
@@ -192,9 +196,12 @@ export class StudentForm {
             }
             return obj;
         }
-        //npm install docxtemplater expressions
         const data = {
             ...form.student,
+            class: this.class,
+            dad: this.dad,
+            mom: this.mom,
+            guardian: this.guardian,
             birthday: form.student.birthday ? formatDate(form.student.birthday) : "",
             address: form.address,
             document: form.document,
@@ -207,6 +214,12 @@ export class StudentForm {
                 education: member["educação"],
                 profession: member["profissão"],
                 salary: formatCurrency(Number(member["sálario"]) || 0)
+            })),
+            authorized: this.authorized.map(a => ({
+                name: a["nome"],
+                kinship: a["parentesco"],
+                rg: a["rg"],
+                phone: a["contato"],
             })),
             total: formatCurrency(this.getTotal()),
             per_capta: formatCurrency(this.getPerCapta()),
@@ -222,6 +235,7 @@ export class StudentForm {
                 birthday: this.birthday ? new Date(this.birthday) : null,
                 gender: this.gender,
                 color: this.color,
+                ...parseID("class_id", this.class_id),
                 twins: this.twins,
                 has_siblings: this.has_siblings,
                 sus: this.sus,
