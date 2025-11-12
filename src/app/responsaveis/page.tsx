@@ -85,6 +85,10 @@ export default function Guardians() {
             })
             const data = await res.json();
             if (!res.ok) throw data.error;
+            if (form.id == -1) {
+                setFormVisible(false);
+                setStudentFormVisible(false);
+            }
             fetchAll();
             Swal.fire({
                 title: `Usuário ${form.id == -1 ? "cadastrado" : "atualizado"} com sucesso!`,

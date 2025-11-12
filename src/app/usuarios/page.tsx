@@ -159,7 +159,7 @@ export default function Users() {
                 <FormInput id="email" label="Email" icon={faEnvelope} value={form.email} onChange={handleChange} />
                 <FormInput
                     id="type"
-                    options={session ? Object.entries(userTypes).filter(([_, level]) => level > session.user.level).map(([role]) => role) : []}
+                    options={session ? Object.entries(userTypes).filter(([_, level]) => level > session.user.level || session.user.level == 1).map(([role]) => role) : []}
                     label="Tipo"
                     icon={faBriefcase}
                     value={form.type}

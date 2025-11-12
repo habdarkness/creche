@@ -101,6 +101,7 @@ export default function Students() {
                 body: JSON.stringify(form.getData())
             })
             const data = await res.json();
+            if (form.id == -1) { setFormIndex(-1) }
             if (!res.ok) throw data.error;
             fetchAll();
             Swal.fire({
@@ -205,7 +206,7 @@ export default function Students() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(classForm.getData())
             })
-            if (classForm.id > -1) setFormIndex(-1);
+            if (classForm.id == -1) setFormIndex(-1);
             const data = await res.json();
             if (!res.ok) throw data.error;
             fetchAll();

@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     const { id, name, email, phone, password, token_password, level, type } = data;
     const session = await VerifyUser();
     if (!session || (session.level > 2 && id && parseInt(id) != session.id)) { return NextResponse.json({ error: "Não autorizado" }, { status: 401 }); }
-    if (level && level <= session.level && id != session.id) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
+    if (level && level <= session.level && id != session.id && session.level > 1) { return NextResponse.json({ error: "Campos inválidos" }, { status: 400 }); }
     try {
         let user;
         if (id) {

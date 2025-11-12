@@ -1,15 +1,18 @@
 "use client"
 
 import Card from "@/components/Card";
+import { useSearch } from "@/components/Contexts";
 import Loader from "@/components/Loader";
 import PageLayout from "@/components/PageLayout";
 import { capitalize } from "@/lib/format";
+import matches from "@/lib/matches";
 import { prismaDate } from "@/lib/prismaLib";
 import { ActionWithRelations } from "@/types/prismaTypes";
 import { User } from "@prisma/client";
 import { act, useEffect, useState } from "react"
 
 export default function Users() {
+    const { filters, search } = useSearch();
     const [loading, setLoading] = useState(false);
     const [actions, setActions] = useState<ActionWithRelations[]>([]);
     useEffect(() => {
@@ -28,7 +31,11 @@ export default function Users() {
         }
         fetchActions();
     }, []);
-    const organized = actions.reduce((acc, action) => {
+    const filtered = actions.filter(a => {
+        const userName = capitalize(a.user ? a.user.name : a.user_name ?? "");
+        return matches({ term: `${userName}: ${a.description}`, type: a.user?.type, date: a.created_at }, search, filters)
+    })
+    const organized = filtered.reduce((acc, action) => {
         const date = prismaDate(action.created_at).toLocaleString("pt-br", { weekday: "long", day: "2-digit", month: "2-digit", year: "2-digit" });
         if (!acc[date]) acc[date] = [];
         acc[date].push(action);

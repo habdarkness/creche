@@ -40,8 +40,23 @@ export async function POST(request: Request) {
 
     try {
         const result = await prisma.$transaction(async (tx) => {
+            const parents = await prisma.guardian.findMany({
+                where: { id: { in: [student.dad_id ?? -1, student.mom_of ?? -1] } },
+                include: { dad_of: true, mom_of: true }
+            })
+            let has_siblings = false;
+            if (parents.length > 0) {
+                parents.forEach(p => {
+                    p.dad_of.forEach(s => {
+                        if (s.id != student.id) { has_siblings = true }
+                    });
+                    p.mom_of.forEach(s => {
+                        if (s.id != student.id) { has_siblings = true }
+                    });
+                })
+            }
+            student.has_siblings = has_siblings;
             let newStudent;
-
             // Cria ou atualiza o estudante
             if (id == undefined) {
                 newStudent = await tx.student.create({ data: { ...student, created_by: session.name } });
@@ -89,6 +104,26 @@ export async function POST(request: Request) {
                 update: assetData,
             });
 
+            if (parents.length > 0) {
+                parents.forEach(async p => {
+                    p.dad_of.forEach(async s => {
+                        if (s.id != student.id) {
+                            await tx.student.update({
+                                where: { id: s.id },
+                                data: { has_siblings: true }
+                            })
+                        }
+                    });
+                    p.mom_of.forEach(async s => {
+                        if (s.id != student.id) {
+                            await tx.student.update({
+                                where: { id: s.id },
+                                data: { has_siblings: true }
+                            })
+                        }
+                    });
+                })
+            }
             return {
                 newStudent,
                 newAddress,

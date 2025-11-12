@@ -48,7 +48,14 @@ export default function SearchBar({ value, onChange }: Props) {
                 classification: { name: "Classificação", type: studentClassifications }
             });
         }
-    }, [pathname])
+        else if (lastPath.includes("historico")) {
+            setFilterOptions({
+                type: { name: "Tipo", type: Object.keys(userTypes) },
+                date: { name: "Data", type: "date" }
+            });
+        }
+    }, [pathname]);
+    if (Object(filterOptions).length == 0) return;
     return (
         <div className="flex gap-2">
             <div className="flex overflow-clip bg-[#f2f2f2] gap-2 w-full rounded-2xl items-center text-primary">

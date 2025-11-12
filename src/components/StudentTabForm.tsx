@@ -202,11 +202,13 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
                                 />
                             ) : null;
                         })()}
-                        <FontAwesomeIcon
-                            icon={faTrash}
-                            className="text-red-400 text-xl hover:scale-125 transition"
-                            onClick={() => handleDeleteReport(report)}
-                        />
+                        {session?.user.id == report.professor_id && (
+                            <FontAwesomeIcon
+                                icon={faTrash}
+                                className="text-red-400 text-xl hover:scale-125 transition"
+                                onClick={() => handleDeleteReport(report)}
+                            />
+                        )}
                     </li>
                 ))}
             </ul>
