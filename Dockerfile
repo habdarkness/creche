@@ -20,4 +20,4 @@ ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+CMD ["node", "node_modules/.bin/next", "start", "-p", "$PORT", "-H", "0.0.0.0"]
