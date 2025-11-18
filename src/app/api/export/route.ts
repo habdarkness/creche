@@ -20,7 +20,7 @@ export async function POST(request: Request) {
             include: { housing: true },
         });
 
-        const rows = students.map((s: any) => {
+        const rows = students.map((s) => {
             const clean = cleanObject(s);
             const form = new StudentForm({
                 ...clean,
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
         });
 
         const headers = Object.keys(rows[0]).join(";");
-        const lines = rows.map((r: any) => Object.values(r).map((v) => `"${v}"`).join(";"));
+        const lines = rows.map((r) => Object.values(r).map((v) => `"${v}"`).join(";"));
         const csv = [headers, ...lines].join("\n");
         const csvWithBom = "\uFEFF" + csv;
 
