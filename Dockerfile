@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npx prisma generate --no-engine-download
+RUN npx prisma generate
 RUN npm run build
 
 # Run
