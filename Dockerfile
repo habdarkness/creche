@@ -1,27 +1,18 @@
 # Build
-FROM node:20 AS builder
+FROM node:20-slim AS builder
 WORKDIR /app
+
+ENV PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
 
 COPY package*.json ./
 RUN npm install
-
 COPY . .
-
-# Corrige erro de download dos engines
-ENV PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
-ENV PRISMA_QUERY_ENGINE_LIBRARY=node-api
-
 RUN npx prisma generate
-
 RUN npm run build
 
-
 # Run
-FROM node:20
+FROM node:20-slim
 WORKDIR /app
-
 COPY --from=builder /app ./
-
 EXPOSE 3000
-
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
+CMD ["npm", "run", "start"]
