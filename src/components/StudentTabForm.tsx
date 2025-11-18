@@ -249,7 +249,7 @@ export default function StudentTabForm({ form, onChange, visible, onVisibilityCh
             </div>
         </TabForm>
     );
-    if (form.id == -1) { tabs.filter(t => t != "Relatórios") }
+    if (form.id == -1) { tabs = tabs.filter(t => t != "Relatórios") }
     if (!session) { return null }
     else if (session.user.level > 2) {
         tabs = ["Matrícula", "Saúde", "Responsáveis", "Endereço", "Relatórios"];

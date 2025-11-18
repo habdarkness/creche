@@ -33,7 +33,12 @@ export class ReportForm {
         return "";
     }
 }
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+tomorrow.setHours(23, 59, 59, 999);
+
 const schema = z.object({
     title: z.string().min(1, "Título é obrigatório"),
-    date: z.date("Data é obrigatório").max(new Date(), "A data não pode ser no futuro"),
+    date: z.date("Data é obrigatório")
+        .max(tomorrow, "A data não pode ser no futuro"),
 });

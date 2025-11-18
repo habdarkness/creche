@@ -18,14 +18,14 @@ Isso irá construir a aplicação e iniciar os serviços em segundo plano.
 
 ### Criar o banco e aplicar as migrations
 ```bash
-npx prisma migrate dev --name init
+docker-compose exec web npx prisma migrate dev --name init
 ```
 
 ---
 
 ### Resetar o banco de dados (⚠️ apaga tudo)
 ```bash
-npx prisma migrate reset
+docker-compose exec web npx prisma migrate reset
 ```
 
 ---
@@ -33,7 +33,7 @@ npx prisma migrate reset
 ## 👤 Iniciar o BD
 Para criar um usuário administrador (email: (administrador@email.com, alice@email.com, bruno@email.com) senha: 123456):
 ```bash
-npx tsx src/scripts/initializeBD.ts
+docker-compose exec web npx tsx src/scripts/initializeBD.ts
 ```
 
 ---
@@ -42,14 +42,14 @@ npx tsx src/scripts/initializeBD.ts
 
 Abrir o Prisma Studio (interface gráfica do banco):
 ```bash
-npx prisma studio
+docker-compose exec web npx prisma studio
 ```
 
 ---
 
 ## 🐚 Acessar o container
 
-Entrar no shell do container `web` (não precisa mais):
+Entrar no shell do container `web`
 ```bash
 docker-compose exec web sh
 ```
