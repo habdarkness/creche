@@ -13,7 +13,5 @@ WORKDIR /app
 
 COPY --from=builder /app ./
 
-RUN npx prisma migrate deploy
-
 EXPOSE 3000
 CMD ["npm", "run", "start"]
