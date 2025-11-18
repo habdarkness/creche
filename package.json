@@ -14,7 +14,7 @@
     "@fortawesome/fontawesome-svg-core": "^7.0.1",
     "@fortawesome/free-solid-svg-icons": "^7.0.1",
     "@fortawesome/react-fontawesome": "^3.0.2",
-    "@prisma/client": "^6.16.2",
+    "@prisma/client": "^6.19.0",
     "angular-expressions": "^1.5.1",
     "bcrypt": "^6.0.0",
     "docxtemplater": "^3.67.1",
@@ -36,7 +36,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
-    "prisma": "^6.16.2",
+    "prisma": "^6.19.0",
     "tailwindcss": "^4",
     "tsx": "^4.20.5"
   }
