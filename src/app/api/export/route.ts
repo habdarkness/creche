@@ -20,7 +20,7 @@ export async function POST(request: Request) {
             include: { housing: true },
         });
 
-        const rows = students.map((s) => {
+        const rows = students.map((s: any) => {
             const clean = cleanObject(s);
             const form = new StudentForm({
                 ...clean,
