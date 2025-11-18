@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "NODE_ENV=production node .next/standalone/server.js",
+    "start": "node .next/standalone/server.js",
     "lint": "eslint",
     "migrate": "prisma migrate deploy",
     "initDB": "ts-node src/scripts/initializeBD.ts"
